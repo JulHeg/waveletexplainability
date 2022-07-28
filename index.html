@@ -1153,8 +1153,8 @@ We compare the wavelet transform to the Fourier transform in the Table above and
   <figure>
     <div class="toolbar">
     <select id="ground_image">
-      <option value="leopard1">Leopard</option>
-      <option value="dalmatian" selected>Dalmatian</option> 
+      <option value="leopard1"selected>Leopard</option>
+      <option value="dalmatian">Dalmatian</option> 
       <option value="airplane">Plane</option>
       <option value="bird">Spoonbill bird</option>
       <option value="deer">Deer</option>
@@ -1194,7 +1194,7 @@ We compare the wavelet transform to the Fourier transform in the Table above and
       img.src = url;
     }
     ar1 = Array.from({ length: 9 }, (x, i) => i + 1);
-    ar2 = Array.from({ length: 50 }, (x, i) => 10 * (i + 1));
+    ar2 = Array.from({ length: 40 }, (x, i) => 10 * (i + 1));
     possible_outputs = ar1.concat(ar2);
     function preloadAllImage() {
       for (var i = 0; i < possible_outputs.length; i++) {
