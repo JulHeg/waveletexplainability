@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+
+<head>
+  <title>Explaining Image Classifiers with Wavelets</title>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Julius Hege, Stefan Kolek, Gitta Kutyniok" />
+  <meta property="og:title" content="The Rock" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://juliushege.com/vis" />
+  <meta property="og:image" content="website-cartoonx-cover/dog.png" />
+  <meta name="twitter:title" content="European Travel Destinations ">
+  <meta name="twitter:description"
+    content="Neural networks are often treated as black boxes that give results without telling how and why. Various methods have been proposed to explain their decisions over the last decade. Here, we present a method, recently published in ECCV 2022, which finds the relevant piece-wise smooth part of an image for a neural network decision using wavelets.">
+  <meta name="twitter:image" content="website-cartoonx-cover/dog.png">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <script src="konva.min.js"></script>
+  <script src="jquery-3.6.0.min.js"></script>
+  <script defer src="tfjs.js"></script>
+  <script id="mbnet" defer src="mobilenet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+  
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      word-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+
+      p,
+      h2,
+      h3 {
+        orphans: 3;
+        widows: 3;
+      }
+
+      h2,
+      h3,
+      h4 {
+        page-break-after: avoid;
+      }
+    }
+
+    p {
+      margin: 1em 0;
+    }
+
+    a {
+      color: #1a1a1a;
+    }
+
+    a:visited {
+      color: #1a1a1a;
+    }
+
+    img {}
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin-top: 1.4em;
+    }
+
+    h5,
+    h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+
+    h6 {
+      font-weight: normal;
+    }
+
+    ol,
+    ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+
+    li>ol,
+    li>ul {
+      margin-top: 0;
+    }
+
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+
+    pre code {
+      padding: 0;
+      overflow: visible;
+    }
+
+    .sourceCode {
+      background-color: transparent;
+      overflow: visible;
+    }
+
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+
+    table caption {
+      margin-bottom: 0.75em;
+    }
+
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+
+    .abstract {
+      margin-left: 1em;
+      margin-right: 1em;
+      font-style: italic;
+      text-align: center;
+    }
+
+    #TOC li {
+      list-style: none;
+    }
+
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+
+    code {
+      white-space: pre-wrap;
+    }
+
+    span.smallcaps {
+      font-variant: small-caps;
+    }
+
+    span.underline {
+      text-decoration: underline;
+    }
+
+    div.column {
+      display: inline-block;
+      vertical-align: top;
+      width: 50%;
+    }
+
+    div.hanging-indent {
+      margin-left: 1.5em;
+      text-indent: -1.5em;
+    }
+
+    ul.task-list {
+      list-style: none;
+    }
+
+    .display.math {
+      display: block;
+      text-align: center;
+      margin: 0.5rem auto;
+    }
+
+    .konvajs-content {
+      background-color: #fff;
+      border: 1px solid blue;
+    }
+
+    .coveredImage {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+    }
+
+    .im {
+      width: 256px;
+      height: 256px;
+    }
+
+    .konvaContainer {
+      width: 256px;
+      height: 256px;
+      margin: 20px 60px;
+    }
+
+    .outsideWrapper {
+      width: 256px;
+      height: 256px;
+      margin: 20px 60px;
+      border: 1px solid blue;
+    }
+
+    .insideWrapper {
+      width: 256px;
+      height: 256px;
+      position: relative;
+    }
+
+    .coveringCanvas {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      image-rendering: pixelated;
+      background-color: rgba(0, 0, 0, 0);
+    }
+
+
+
+    #counter {
+      display: inline-block
+    }
+
+    #nn_out {
+      display: inline-block
+    }
+
+    #network {
+      display: inline-block
+    }
+
+    .flex-container {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .flex-content {
+      margin: 10px;
+    }
+
+    /* Responsive layout - makes a one column layout instead of a two-column layout */
+    @media (max-width: 950px) {
+      .flex-container {
+        flex-direction: column;
+      }
+    }
+  </style>
+  <style>
+    .slides {
+      display: none;
+      width: 100%;
+    }
+    .slides2 {
+      display: none;
+      width: 100%;
+    }
+
+    @-webkit-keyframes fadeinout {
+
+      0%,
+      100% {
+        opacity: 0;
+      }
+
+      50% {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeinout {
+
+      0%,
+      100% {
+        opacity: 0;
+      }
+
+      20% {
+        opacity: 1;
+      }
+
+      80% {
+        opacity: 1;
+      }
+    }
+
+    .imageheadline {
+      text-align: center;
+    }
+	
+	#slider{
+	margin-left: 15px;
+	margin-right: 15px;
+	}
+	
+	.toolbar{
+	display: flex;
+	}
+	
+	.title{
+	font-style: italic;
+	}
+  </style>
+</head>
+
+<body>
+  <header id="title-block-header">
+    <h1 class="title">Explaining Image Classifiers with Wavelets</h1>
+    <p class="author"><a
+        href="https://juliushege.com/">Julius Hege</a>&dagger;, <a href="https://github.com/skmda37/">Stefan Kolek</a>&dagger;, <a
+        href="https://www.ai.math.uni-muenchen.de/members/professor/kutyniok/index.html">Gitta
+        Kutyniok</a>&dagger;&Dagger;</p>
+    <p class="author">&dagger; Department of Mathematics, LMU Munich, 80333 Munich, Germany<br>
+      &Dagger; Department of Physics and Technology, University of Tromsø, 9019 Tromsø, Norway</p>
+    <p class="date">July 2022</p>
+    <p class="abstract">Neural networks are often treated as black boxes that give results without telling how and why.
+      Various methods have been proposed to explain their decisions over the last decade. Here, we present a method,
+      recently published in ECCV 2022, which finds the relevant piece-wise smooth part of an image for a neural network
+      decision using wavelets.</p>
+  </header>
+  <div>
+    <img class="slides" src="website-cartoonx-cover/airplane.png">
+    <img class="slides" src="website-cartoonx-cover/bear.png">
+    <img class="slides" src="website-cartoonx-cover/bird.png">
+    <img class="slides" src="website-cartoonx-cover/dog.png">
+    <img class="slides" src="website-cartoonx-cover/kobe.png">
+  </div>
+  <script>
+    var index = 0;
+    carousel();
+
+    function carousel() {
+      var i;
+      var x = document.getElementsByClassName("slides");
+      for (i = 0; i < x.length; i++) {
+        x[i].style.display = "none";
+      }
+      index++;
+      if (index >= x.length) { index = 0 }
+      x[index].style.display = "block";
+      setTimeout(carousel, 2000);
+    }
+  </script>
+  <p>Neural networks are powerful function approximators that can be trained on data to solve complex tasks, such as
+    image classification. However, the expressive power of neural networks comes with a price: Neural networks are not
+    inherently interpretable. It’s difficult to say why a network <span class="math inline">\(f_\theta\)</span> decides
+    to assign an image <span class="math inline">\(x\)</span> the label <span
+      class="math inline">\(y=f_\theta({\color{orange}x})\)</span>, let alone to say what constitutes a good model explanation. Over the
+    last decade, research yielded many competing approaches to these questions. One popular and particularly intuitive
+    framework is the <em>mask-based explanation</em> framework. The idea is quite simple: a good explanation for <span
+      class="math inline">\(y=f_\theta({\color{orange}x})\)</span> is a mask <span class="math inline">\(m\in\{0,1\}^d\)</span> over the
+    input <span class="math inline">\({\color{orange}x}\in\mathbb{R}^d\)</span> that masks the <em>irrelevant</em> input features. The mask captures the relevant components in <span
+      class="math inline">\({\color{orange}x}\)</span> if they determine the model output. To test that, we require that for all
+    meaningful perturbations <span class="math inline">\(\xi\in\mathbb{R}^d\)</span> the so-called <em>distortion</em>
+    is small: <span class="math display">\[\begin{aligned}
+      \label{eq: model output diff}
+      \|f_\theta({\color{orange}\underbrace{x}_{\text{input}}}) - f_\theta({\color{Blue}\underbrace{m \odot x +
+      (1-m)\odot \xi}_{\text{perturbed input}}}) \|_2\approx 0.\end{aligned}\]</span>
+  </p>
+  <p>But what exactly constitutes a meaningful perturbation? We typically assume that data <a
+      href="https://colah.github.io/posts/2014-03-NN-Manifolds-Topology/">lies on a low-dimensional manifold</a>.
+    Ideally, replacing the masked parts of the image with our perturbation should keep the result <span
+      class="math inline">\(\color{Blue} m \odot x + (1-m)\odot \xi\)</span> in the manifold of the underlying data
+    distribution for the classification task of <span class="math inline">\(f_\theta\)</span>. This would ensure that
+    <span class="math inline">\(f_\theta\)</span> still behaves well on the new input. In practice, modeling the
+    conditional input distribution may be difficult or infeasible. In that case, we can resort to heuristic choices such
+    as Gaussian noise perturbations, inpainting with another neural network, or infilling with an constant average.
+  </p>
+<p> Below, you can draw some masks yourself. Then press the button "Predict with
+    Neural Network" to calculate the expected distortion and the most likely classification for a small neural net called <a
+      href="https://medium.com/analytics-vidhya/image-classification-with-mobilenet-cc6fbb2cd470">MobileNet</a>
+    after perturbing unselected pixels with Gaussian noise. Can you guess which parts of the images are important for the MobileNet? </p>
+
+  <figure>
+    Tool:
+    <select id="tool_2">
+      <option value="brush">Brush</option>
+      <option value="eraser">Eraser</option>
+    </select>
+    <select id="width_2">
+      <option>1</option>
+      <option>2</option>
+      <option>3</option>
+      <option>4</option>
+      <option selected>5</option>
+      <option>6</option>
+      <option>7</option>
+      <option>8</option>
+      <option>16</option>
+      <option>32</option>
+      <option>64</option>
+    </select>
+    <select id="fill_select">
+      <option value="1" selected>Fill with noise</option>
+      <option value="0">Fill white</option>
+    </select>
+    <select id="ground_image_2">
+      <option value="295">Bear</option>
+      <option value="100">Black swan</option>
+      <option value="251" selected>Dalmatian</option>
+      <option value="385">Elephant</option>
+      <option value="277">Fox</option>
+    </select>
+    <button id="clear_2" type="button">Clear Canvas</button>
+    <div class="flex-container">
+      <div class="flex-content">
+        <p class="imageheadline">Original</p>
+        <canvas id="canvas_original_2"
+          style="padding: 0px; margin: 0px; border: 0px none; background: #f0f0f0 none repeat scroll 0% 0%; width: 256px; height: 256px; display: block;"
+          width="256" height="256"></canvas>
+      </div>
+      <div class="flex-content">
+        <p class="imageheadline">Mask (draw here!)</p>
+        <div id="container_2" style="margin: 0px;"></div>
+      </div>
+      <div class="flex-content">
+        <p class="imageheadline">Perturbed Image</p>
+        <canvas id="canvas_obf_2"
+          style="padding: 0px; margin: 0px; border: 0px none; background: #f0f0f0 none repeat scroll 0% 0%; width: 256px; height: 256px; display: block;"
+          width="256" height="256"></canvas>
+      </div>
+    </div>
+    <p id="pixel_score" style="display:none">Used pixels:<span id="counter">0</span>/10000</p>
+    <button id="nn" type="button">Predict with Neural Network</button>
+    <p>Average Distortion:<span id="nn_out"></span></p>
+    <p>Top label: <span id="top"></span></p>
+    <script>
+      document.getElementById("ground_image_2").value = "251"
+      const batch_size = 8;
+
+      function indexOfMax(arr) { //Helper function from https://stackoverflow.com/questions/11301438/return-index-of-greatest-value-in-an-array/11301464
+        if (arr.length === 0) {
+          return -1;
+        }
+
+        var max = arr[0];
+        var maxIndex = 0;
+
+        for (var i = 1; i < arr.length; i++) {
+          if (arr[i] > max) {
+            maxIndex = i;
+            max = arr[i];
+          }
+        }
+
+        return maxIndex;
+      }
+      labels = fetch("imagenet_class_index.json")
+        .then(response => {
+          return response.json();
+        })
+
+      //Create canvas for drawing
+      //The drawing part of this file is based on https://konvajs.org/docs/sandbox/Free_Drawing.html
+      var img_2 = new Image();
+      img_2.crossOrigin = 'anonymous';
+      img_2.src = 'website_examples/dalmatian/dalmatian2.png';
+      var target_label = 1;
+      var canvas_original_2 = document.getElementById('canvas_original_2');
+      var ctx_original = canvas_original_2.getContext('2d');
+      img_2.onload = () => {
+        ctx_original.drawImage(img_2, 0, 0);
+        update_obfuscated_2();
+      }
+      var canvas_obf_2 = document.getElementById('canvas_obf_2');
+      var ctx_obf_2 = canvas_obf_2.getContext('2d');
+      var width_2 = 256;
+      var height = 256;
+      var stage_2 = new Konva.Stage({
+        container: 'container_2',
+        width: width_2,
+        height: height,
+      });
+
+      var layer2 = new Konva.Layer();
+      stage_2.add(layer2);
+
+      var canvas_draw_2 = document.createElement('canvas');
+      var ctx_draw_2 = canvas_draw_2.getContext('2d');
+      canvas_draw_2.width = stage_2.width();
+      canvas_draw_2.height = stage_2.height();
+
+      //We also define object for the other two canvases
+
+      // created canvas we can add to layer as "Konva.Image" element
+      var image_2 = new Konva.Image({
+        image: canvas_draw_2,
+        x: 0,
+        y: 0,
+      });
+      layer2.add(image_2);
+
+      var select21 = document.getElementById('tool_2');
+      select21.addEventListener('change', function () {
+        mode_2 = select21.value;
+      });
+
+      var select22 = document.getElementById('width_2');
+      select22.addEventListener('change', function () {
+        context_2.lineWidth = select22.value;
+      });
+
+      var select25 = document.getElementById('fill_select');
+      select25.addEventListener('change', function () {
+        update_obfuscated_2();
+      });
+
+      var select32 = document.getElementById('ground_image_2');
+      select32.addEventListener('change', function () {
+        switch (select32.value) {
+          case "251":
+            img_2.src = 'website_examples/dalmatian/dalmatian2.png';
+            target_label = 251;
+            break;
+          case "100":
+            img_2.src = 'website_examples/blackswan/blackswan2.png';
+            target_label = 100;
+            break;
+          case "295":
+            img_2.src = 'website_examples/bear/bear2.png';
+            target_label = 295;
+            break;
+          case "385":
+            img_2.src = 'website_examples/elephant1/elephant12.png';
+            target_label = 385;
+            break;
+          case "277":
+            img_2.src = 'website_examples/fox1/fox12.png';
+            target_label = 277;
+            break;
+        }
+      });
+      document.getElementById('mbnet').addEventListener('load', async function () {
+        console.log('Loading mobilenet..');
+
+        // Load the model.
+        net = await mobilenet.load({ version: 1, resolution: 128, alpha: 0.25 });
+        console.log('Successfully loaded model');
+      });
+      let res;
+      let workingString = "Predicting ...️"
+      document.getElementById("nn").addEventListener("click", function () {
+        if (document.getElementById("nn").innerHTML != workingString) {
+          originalButtonString = document.getElementById("nn").innerHTML;
+          document.getElementById("nn").innerHTML = workingString;
+          setTimeout(async () => {
+            tf.engine().startScope();
+            mask = tf.cast(tf.image.resizeBilinear(tf.browser.fromPixels(canvas_draw_2, 4), [128, 128]).max(axis = 2), 'float32').div(tf.scalar(255)); //Mask the user draws, rescaled to [0,1]^{128*128}
+            duplicated_mask = tf.tile(tf.expandDims(tf.expandDims(mask, axis = 2), axis = 0), [batch_size, 1, 1, 3]); //Mask with extra dimensions
+            original_image = tf.cast(tf.image.resizeBilinear(tf.browser.fromPixels(canvas_original_2, 3), [128, 128]), 'float32'); //Original image from canvas, also now in [0,1]^{128*128}
+            original_duplicated = tf.tile(tf.expandDims(original_image, axis = 0), [batch_size, 1, 1, 1]);
+            noise = tf.randomNormal([batch_size, 128, 128, 3]);
+            noise = tf.add(tf.mul(noise, tf.scalar(0.22 * 255)), tf.scalar(0.45)) //Random noise with roughly right mean and std
+            is_noise = parseInt(document.getElementById("fill_select").value);
+            noise = tf.mul(noise, tf.scalar(is_noise))
+            combined = tf.add(tf.mul(duplicated_mask, original_duplicated), tf.mul(tf.sub(tf.scalar(1), duplicated_mask), noise))
+            result = await tf.softmax(net.infer(combined))
+            result_original = await tf.softmax(net.infer(tf.expandDims(original_image, axis = 0)))
+            result_mean = await result.mean(axis = 0).data()
+            distortion = tf.losses.meanSquaredError(result, tf.tile(result_original, [batch_size, 1]))
+            document.getElementById("nn_out").innerHTML = (await distortion.data() * 1000).toFixed(3);
+            max_index = indexOfMax(result_mean)
+            document.getElementById("top").innerHTML = "'" + (await labels)[max_index][1] + "' (" + Number.parseFloat(result_mean[max_index] * 100).toFixed(2) + "%)"
+
+            document.getElementById("nn").innerHTML = originalButtonString;
+            tf.engine().endScope();
+          }, 100)
+        }
+      });
+
+      document.getElementById("clear_2").addEventListener("click", function () {
+        (async () => {
+          context_2.clearRect(0, 0, 256, 256);
+          layer2.batchDraw();
+          update_obfuscated_2();
+        })();
+      });
+
+      // Good. Now we need to get access to context element
+      var context_2 = canvas_draw_2.getContext('2d');
+      context_2.strokeStyle = '#000';
+      context_2.lineJoin = 'round';
+      context_2.lineWidth = select22.value;
+
+      var isPaint_2 = false;
+      var lastPointerPosition_2;
+      var mode_2 = select21.value;
+
+      // now we need to bind some events
+      // we need to start drawing on mousedown
+      // and stop drawing on mouseup
+      image_2.on('mousedown touchstart', function () {
+        isPaint_2 = true;
+        lastPointerPosition_2 = stage_2.getPointerPosition();
+      });
+
+      // will it be better to listen move/end events on the window?
+
+      stage_2.on('mouseup touchend', function () {
+        isPaint_2 = false;
+      });
+
+      // and core function - drawing
+      stage_2.on('mousemove touchmove', function () {
+        if (!isPaint_2) {
+          return;
+        }
+
+        if (mode_2 === 'brush') {
+          context_2.globalCompositeOperation = 'source-over';
+        }
+        if (mode_2 === 'eraser') {
+          context_2.globalCompositeOperation = 'destination-out';
+        }
+        context_2.beginPath();
+
+        var localPos = {
+          x: lastPointerPosition_2.x - image_2.x(),
+          y: lastPointerPosition_2.y - image_2.y(),
+        };
+        context_2.moveTo(localPos.x, localPos.y);
+        var pos = stage_2.getPointerPosition();
+        localPos = {
+          x: pos.x - image_2.x(),
+          y: pos.y - image_2.y(),
+        };
+        context_2.lineTo(localPos.x, localPos.y);
+        context_2.closePath();
+        context_2.stroke();
+
+        lastPointerPosition_2 = pos;
+        // redraw manually
+        layer2.batchDraw();
+
+        //count pixels
+
+        var alphaPixels = 0;
+
+        var data = ctx_draw_2.getImageData(0, 0, ctx_draw_2.canvas.width, ctx_draw_2.canvas.height).data;
+        for (var i = 3; i < data.length; i += 4) {
+          if (data[i] > 0) alphaPixels++;
+        }
+
+        //Display the number of black pixels, color red if more than 10000
+        document.getElementById("counter").innerHTML = alphaPixels
+        if (alphaPixels > 10000) {
+          document.getElementById("counter").style.color = "red";
+        }
+        else {
+          document.getElementById("counter").style.color = "black";
+        }
+
+        update_obfuscated_2();
+
+
+      });
+
+      function update_obfuscated_noise() {
+        var data = ctx_draw_2.getImageData(0, 0, ctx_draw_2.canvas.width, ctx_draw_2.canvas.height).data;
+        var imageData_original = ctx_original.getImageData(0, 0, canvas_original_2.width, canvas_original_2.height);
+        const data_original = imageData_original.data;
+
+        const imageData_obf = ctx_obf_2.getImageData(0, 0, canvas_obf_2.width, canvas_obf_2.height);
+        const data_obf_2 = imageData_obf.data;
+        for (var i = 0; i < data_obf_2.length; i += 4) {
+          if (data[i + 3] > 0) {
+            data_obf_2[i] = data_original[i];     // red
+            data_obf_2[i + 1] = data_original[i + 1]; // green
+            data_obf_2[i + 2] = data_original[i + 2]; // blue
+            data_obf_2[i + 3] = data_original[i + 3]; // alpha
+          }
+          else {
+            is_noise = parseInt(document.getElementById("fill_select").value);
+            if (is_noise == 1) {
+              data_obf_2[i] = Math.random() * 255;     // red
+              data_obf_2[i + 1] = Math.random() * 255; // green
+              data_obf_2[i + 2] = Math.random() * 255; // blue
+            }
+            else {
+
+              data_obf_2[i] = 255;     // red
+              data_obf_2[i + 1] = 255; // green
+              data_obf_2[i + 2] = 255; // blue
+            }
+            data_obf_2[i + 3] = 255; // alpha
+          }
+        }
+        ctx_obf_2.putImageData(imageData_obf, 0, 0);
+      }
+
+      function update_obfuscated_inpainting() {
+        var data = ctx_draw_2.getImageData(0, 0, ctx_draw_2.canvas.width, ctx_draw_2.canvas.height).data;
+        var imageData_original = ctx_original.getImageData(0, 0, canvas_original_2.width, canvas_original_2.height);
+        const data_original = imageData_original.data;
+
+        const imageData_obf = ctx_obf_2.getImageData(0, 0, canvas_obf_2.width, canvas_obf_2.height);
+        const data_obf_2 = imageData_obf.data;
+        for (var i = 0; i < data_obf_2.length; i += 4) {
+          if (data[i + 3] > 0) {
+            data_obf_2[i] = data_original[i];     // red
+            data_obf_2[i + 1] = data_original[i + 1]; // green
+            data_obf_2[i + 2] = data_original[i + 2]; // blue
+            data_obf_2[i + 3] = data_original[i + 3]; // alpha
+          }
+          else {
+            is_noise = parseInt(document.getElementById("fill_select").value);
+            if (is_noise == 1) {
+              data_obf_2[i] = Math.random() * 255;     // red
+              data_obf_2[i + 1] = Math.random() * 255; // green
+              data_obf_2[i + 2] = Math.random() * 255; // blue
+            }
+            else {
+
+              data_obf_2[i] = 255;     // red
+              data_obf_2[i + 1] = 255; // green
+              data_obf_2[i + 2] = 255; // blue
+            }
+            data_obf_2[i + 3] = 255; // alpha
+          }
+        }
+        ctx_obf_2.putImageData(imageData_obf, 0, 0);
+      }
+
+      function update_obfuscated_2() {
+            is_noise = parseInt(document.getElementById("fill_select").value);
+        if (is_noise <= 1) {
+          update_obfuscated_noise();
+        }
+      }
+    </script>
+    <!--<figcaption aria-hidden="true">Caption</figcaption>-->
+  </figure>
+
+  <p>
+    Of course, we don't want to guess and draw multiple masks ourselves in practive to explain a neural net. Instead we want an algorithm that finds a good explanation mask efficiently.
+  </p>
+  <h1 class="unnumbered" id="generating-mask-based-explanations">Finding Mask Explanations</h1>
+  <p>How can we find a "good" explanation mask? It turns out, all we need to do is solve an optimization problem. First, we model
+    perturbations as a random variable <span class="math inline">\(\xi \sim \Xi\)</span>, where <span
+      class="math inline">\(\Xi\)</span> is a pre-chosen probability distribution (e.g. Gaussian). We say a sparse mask <span
+      class="math inline">\(m\in\{0,1\}^d\)</span> is a good explanation mask for <span class="math inline">\(x\)</span>
+    if the model output for <span><span class="math inline">\({\color{orange}x}\)</span></span> is on average approximately the same as
+    for the masked and perturbed input <span><span class="math inline">\(\color{Blue} m \odot x + (1-m)\odot \xi\)</span></span>. Formally, this condition is <span class="math display">\[\begin{aligned}
+      \label{eq: expected model output diff}
+      {\color{black}\mathop{\mathbb{E}}_{\xi\sim\Xi}\Big[\|f_\theta({\color{orange}x}) - f_\theta({\color{Blue}m \odot x
+      + (1-m)\odot \xi}) \|_2\Big]\approx 0.}\end{aligned}\]</span> Note that the trivial mask <span
+      class="math inline">\(m = \begin{bmatrix}1 &amp; \dots &amp; 1 \end{bmatrix}^T\)</span> always satisfies this
+    condition with strict equality. However, that mask does not provide any explanatory information because it does not
+    tell us which features are <em>not relevant for the classification decision</em>. To find useful and concise
+    explanatory information about <span class="math inline">\(f_\theta({\color{orange}x})\)</span>, we need to find a
+    <em>sparse</em> mask <span class="math inline">\({m}\)</span> satisfying the condition above. Finding the explanation mask
+    <span class="math inline">\(m\)</span> becomes an optimization problem: <span class="math display">\[\begin{aligned}
+      \label{opt: explanation mask}
+      \min_{{m}\in\{0,1\}^d} \mathop{\mathbb{E}}_{\xi\sim\Xi}\Big[\|f_\theta({\color{orange}x}) -
+      f_\theta({\color{Blue}m \odot x + (1-m)\odot \xi}) \|_2\Big] \;\;\;\;\;\; \textrm{s.t.}\;\; \|{m}\|_0 =
+      l,\end{aligned}\]</span> where <span class="math inline">\(0&lt;l&lt;d\)</span> is a pre-specified desired
+    sparsity level. Most interesting applications involve high-dimensional inputs <span
+      class="math inline">\({\color{orange}x}\in\mathbb{R}^d\)</span> (e.g. for images <span
+      class="math inline">\(d\)</span> is in the order of the number of pixels) and solving the optimization problem
+    becomes <a href="https://arxiv.org/abs/1905.11092">computationally infeasible</a>. Still, we can try to
+    approximately solve it by solving the Lagrangian relaxation <span class="math display">\[\begin{aligned}
+      \label{opt: lagrangian relaxation}
+      \min_{{m}\in[0,1]^d} \mathop{\mathbb{E}}_{\xi\sim\Xi}\Big[\|f_\theta({\color{orange}x}) - f_\theta({\color{Blue}m
+      \odot x + (1-m)\odot \xi}) \|_2\Big] + \lambda \|{m}\|_1,\end{aligned}\]</span> where <span
+      class="math inline">\(\lambda&gt;0\)</span> determines the sparsity level of the relaxed continuous mask <span
+      class="math inline">\(m\in[0,1]^d\)</span>. Although the mask <span class="math inline">\(m\)</span> is no longer
+    binary in the relaxed optimization problem, the <span class="math inline">\(\ell_1\)</span>-term promotes sparsity
+    and produces useful explanatory insight in practice. In practice, the expectation can be approximated with a simple Monte-Carlo estimate and the relaxed optimization problem can be solved with gradient
+    descent over the input mask <span class="math inline">\(m\)</span>.
+  </p>
+      <p>How can we apply the above framework to images? Images are typically represented as an array of shape <span class="math inline">\(\mathbb{R}^{n\times m\times
+      c}\)</span>, where the image has a resolution of <span class="math inline">\(n\times m\)</span> pixels and <span
+      class="math inline">\(c\)</span> different color channels per pixel. If we apply the mask-based explanation method to
+    images in the pixel basis, then we would get the most important color channels of all pixels. But that is not
+    particularly meaningful for us humans. We could also mask all colors of pixels at once and explain pixel-wise, which is a common approach for explaining image classifiers. Then the masking method
+    would give us the most important pixels. However, we usually don't care about single pixels and a set of pixels can potentially look very jittery. We would instead like to find
+    relevant piece-wise smooth image regions. This is where the so-called <a
+      href="https://en.wikipedia.org/wiki/Wavelet_transform">wavelet transform</a> can help us. By applying the wavelet
+    transformation, we still represent the images as an array of numbers, but instead of the brightness of a single
+    pixel, each number can represent a larger structure. The wavelet transform tends to be not as widely known as the Fourier transform outside the signal-processing community. Therefore, we will briefly explain the wavelet transform, which is an essential tool in signal-processing and has plenty of applications beyond explainability in data science and machine learning.
+</p>
+
+<h1 class="unnumbered" id="Wavelets">Wavelets</h1>
+
+<p>
+The wavelet transform is very closely related to the well-known Fourier transform. The Fourier transform convolves a signal
+<span class="math inline">\(x\mapsto f(x)\)</span>
+      with sinusoids <span class="math inline">\(x\mapsto e^{-i2\pi\xi x }\)</span> of different frequencies <span class="math inline">\(\xi\)</span>, thereby decomposing the signal <span class="math inline">\(x\mapsto f(x)\)</span> into their frequency components  <span class="math inline">\(f(\xi)\)</span>  through the relationship 
+<!--<span class="math display">\[\begin{aligned}
+      &\hat f(\xi) \coloneqq \int_{-\infty}^{\infty}e^{-i2\pi\xi x}f(x)\,dx\\
+&  f(x) \coloneqq \int_{-\infty}^{\infty}e^{i2\pi\xi x}f(\xi)\,d\xi. \end{aligned}\]</span>-->
+<span class="math display">\[\hat f(\xi) \coloneqq \int_{-\infty}^{\infty}e^{-i2\pi\xi x}f(x)\,dx.\]</span>
+The Fourier Transform has full frequency resolution but no spatial resolution, meaning we can say which frequencies <span class="math inline">\(\xi\)</span>   occur in the signal <span class="math inline">\(x\mapsto f(x)\)</span> but not at what position <span class="math inline">\(x\)</span>. The wavelet transform extracts both spatial and frequency information by convolving a signal <span class="math inline">\(x\mapsto f(x)\)</span> not with sinusoids but so-called <em>wavelets</em> (denoted as <span class="math inline">\(x\mapsto \psi(x)\)</span> and referring to a wave-like oscillation), which are  localized in space to provide additional spatial information  unlike the sinusoids. 
+ The wavelet transform filters a signal (e.g. an image) with a filter 
+ <span class="math display">\[\begin{aligned}
+ x\mapsto \frac{1}{\sqrt{a}}\psi\Big(\frac{x-b}{a}\Big)
+  \end{aligned}\]</span>
+  that is localized in frequency (represented by a scale parameter <span class="math inline">\(a\)</span>) and position (represented by parameter <span class="math inline">\(b\)</span>). In practice, there are many possible wavelets <span class="math inline">\(\psi\)</span> to choose from, such as Haar or Daubechies wavelets. 
+</p>
+ <div id="tab:wavelets">
+    <table>
+      <caption>Table 1: The Fourier and wavelet transform compared.</caption>
+      <thead>
+        <tr class="header">
+          <th style="text-align: left;"><em>Transform</em></th>
+          <th style="text-align: left;"><em>Formula</em></th>
+          <th style="text-align: left;"><em>Parameters</em></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="odd">
+          <td style="text-align: left;">Fourier Transform</td>
+          <td style="text-align: left;"><span class="math inline">\(\hat f(\xi) \coloneqq
+              \int_{-\infty}^{\infty}e^{i2\pi\xi t}f(t)\,dt\)</span></td>
+          <td style="text-align: left;">Frequency <span class="math inline">\(\xi\)</span></td>
+        </tr>
+        <tr class="even">
+          <td style="text-align: left;">Wavelet Transform</td>
+          <td style="text-align: left;"><span class="math inline">\(\mathcal{W}(a, b) \coloneqq
+              \frac{1}{\sqrt{a}}\int_{-\infty}^\infty \psi\Big(\frac{t - b}{a}\Big)f(t)\,dt\)</span></td>
+          <td style="text-align: left;">Scale <span class="math inline">\(a\)</span>, Position <span
+              class="math inline">\(b\)</span>, Mother wavelet <span class="math inline">\(\psi\)</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+<p>
+We compare the wavelet transform to the Fourier transform in the Table above and the figure below. In the figure below click on the button to select beween three signals and notice that the wavelet transform can localize the sine oscillations and the delta function peak, as well as give time-frequency information for the signal in the El Niño dataset (quarterly measurements of the sea surface temperature from 1871 up to 1997 throughout the equatorial Pacific). 
+</p>
+<figure>
+<select id="imselector">
+    <option value="slide1">Delta</option>
+    <option value="slide2">El Niño</option>
+    <option value="slide3" selected>Sine</option>
+</select>
+    <img class="slides2" id="slide1" src="wavelet-figures/delta.png">
+    <img class="slides2" id="slide2" src="wavelet-figures/nino.png">
+    <img class="slides2" id="slide3" src="wavelet-figures/sine.png" style="display: block;">
+</figure>
+  <script>
+    var selectim = document.getElementById('imselector');
+    selectim.addEventListener('change', function () {
+      images = ["slide1", "slide2", "slide3"];
+	  for (let i = 0; i < images.length; i++) {
+      var x = document.getElementById(images[i]);
+	console.log(x);
+      if(selectim.value == images[i]){
+        x.style.display = "block";
+	  }
+	  else{
+        x.style.display = "none";
+		}
+	} 
+    });
+  </script>
+
+<p>
+ Now that we understand the wavelet transform in one dimension, we can go back to images, which are two-dimensional signals. Just like the Fourier transform, the wavelet transform can be extended to two dimensions. Since images are discrete objects, we use the discrete wavelet transform, which works similarly to the discrete Fourier transform. You can drawing in the box below to get a live visualization of the two-dimensional discrete wavelet transform for the <a href="https://en.wikipedia.org/wiki/Haar_wavelet">Haar wavelet</a>. Roughly speaking, a single Haar wavelet can represent a square. With that, it can fairly accurately represent images with fewer non-zero numbers. If you draw on the left side below, it will automatically calculate the Haar wavelet transform of the drawn image and represent its wavelet coefficients on the right side. Each quadrant represents a wavelet coefficient <span class="math inline">\(\mathcal{W}(a,b)\)</span> at a scale <span class="math inline">\(a\)</span> and pixel position <span class="math inline">\(b\)</span>. The small scales correspond to large quadrants and fine details features. For each scale <span class="math inline">\(a\)</span>, there are three quadrants representing horizontal, vertical, and diagonal wavelet filtering. Try drawing a larger region, and you will see that most of the image on the right remains blank. This is because natural images tend to be <em>sparse</em> in the wavelet-domain (few non-zero wavelet coefficients), a property which is also used by image compression algorithms.
+</p>
+
+  <select id="tool">
+    <option value="brush">Brush</option>
+    <option value="eraser">Eraser</option>
+  </select>
+  <select id="width">
+    <option>1</option>
+    <option>2</option>
+    <option>3</option>
+    <option>4</option>
+    <option selected>5</option>
+    <option>6</option>
+    <option>7</option>
+    <option>8</option>
+    <option>16</option>
+    <option>32</option>
+    <option>64</option>
+  </select>
+  <button id="clear" type="button">Clear Canvas</button>
+  <div class="flex-container">
+	  <div class="flex-content">
+        <p class="imageheadline">Pixel image</p>
+    <div id="container" class="konvaContainer"></div>
+      </div>
+	  <div class="flex-content">
+        <p class="imageheadline">Discrete wavelet transform</p>
+    <div class="outsideWrapper">
+      <div class="insideWrapper">
+        <img src="background.png" class="coveredImage">
+        <canvas id="canvas_obf" class="coveringCanvas" width="128" height="128"></canvas>
+    </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    //Create canvas for drawing
+    //The drawing part of this file is based on https://konvajs.org/docs/sandbox/Free_Drawing.html
+    var canvas_obf = document.getElementById('canvas_obf');
+    var ctx_obf = canvas_obf.getContext('2d');
+    ctx_obf.translate(2, 2);
+    var width = 256;
+    var height = 256;
+    var stage = new Konva.Stage({
+      container: 'container',
+      width: width,
+      height: height,
+    });
+
+    var layer = new Konva.Layer();
+    stage.add(layer);
+
+    var canvas_draw = document.createElement('canvas');
+    var ctx_draw = canvas_draw.getContext('2d');
+    canvas_draw.width = stage.width();
+    canvas_draw.height = stage.height();
+
+    //We also define object for the other two canvases
+
+    // created canvas we can add to layer as "Konva.Image" element
+    var image = new Konva.Image({
+      image: canvas_draw,
+      x: 0,
+      y: 0,
+    });
+    layer.add(image);
+
+    var select = document.getElementById('tool');
+    select.addEventListener('change', function () {
+      mode = select.value;
+    });
+
+    var select2 = document.getElementById('width');
+    select2.addEventListener('change', function () {
+      context.lineWidth = select2.value;
+    });
+
+    document.getElementById("clear").addEventListener("click", function () {
+      (async () => {
+        context.clearRect(0, 0, 256, 256);
+        layer.batchDraw();
+        update_obfuscated();
+      })();
+    });
+
+    // Good. Now we need to get access to context element
+    var context = canvas_draw.getContext('2d');
+    context.strokeStyle = '#000';
+    context.lineJoin = 'round';
+    context.lineWidth = select2.value;
+
+    var isPaint = false;
+    var lastPointerPosition;
+    var mode = select.value;
+
+    // now we need to bind some events
+    // we need to start drawing on mousedown
+    // and stop drawing on mouseup
+    image.on('mousedown touchstart', function () {
+      isPaint = true;
+      lastPointerPosition = stage.getPointerPosition();
+    });
+
+    // will it be better to listen move/end events on the window?
+
+    stage.on('mouseup touchend', function () {
+      isPaint = false;
+    });
+
+    // and core function - drawing
+    stage.on('mousemove touchmove', function () {
+      if (!isPaint) {
+        return;
+      }
+
+      if (mode === 'brush') {
+        context.globalCompositeOperation = 'source-over';
+      }
+      if (mode === 'eraser') {
+        context.globalCompositeOperation = 'destination-out';
+      }
+      context.beginPath();
+
+      var localPos = {
+        x: lastPointerPosition.x - image.x(),
+        y: lastPointerPosition.y - image.y(),
+      };
+      context.moveTo(localPos.x, localPos.y);
+      var pos = stage.getPointerPosition();
+      localPos = {
+        x: pos.x - image.x(),
+        y: pos.y - image.y(),
+      };
+      context.lineTo(localPos.x, localPos.y);
+      context.closePath();
+      context.stroke();
+
+      lastPointerPosition = pos;
+      // redraw manually
+      layer.batchDraw();
+
+      //count pixels
+
+      var alphaPixels = 0;
+
+      var data = ctx_draw.getImageData(0, 0, ctx_draw.canvas.width, ctx_draw.canvas.height).data;
+      for (var i = 3; i < data.length; i += 4) {
+        if (data[i] > 0) alphaPixels++;
+      }
+
+      update_obfuscated();
+    });
+
+
+    function HaarWaveletTrans(src, NIter) {
+      var dst = src;
+      height = src.length;
+      width = src[0].length;
+
+      for (let k = 0; k < NIter; k++) {
+        for (let y = 0; y < (height >> (k + 1)); y++) {
+          for (let x = 0; x < (width >> (k + 1)); x++) {
+            c = (src[2 * y][2 * x] + src[2 * y][2 * x + 1] + src[2 * y + 1][2 * x] + src[2 * y + 1][2 * x + 1]) * 0.5;
+            dst[y][x] = c;
+
+            dh = (src[2 * y][2 * x] - src[2 * y][2 * x + 1] + src[2 * y + 1][2 * x] - src[2 * y + 1][2 * x + 1]) * 0.5;
+            dst[y][x + (width >> (k + 1))] = dh;
+
+            dv = (src[2 * y][2 * x] + src[2 * y][2 * x + 1] - src[2 * y + 1][2 * x] - src[2 * y + 1][2 * x + 1]) * 0.5;
+            dst[y + (height >> (k + 1))][x] = dv;
+
+            dd = (src[2 * y][2 * x] - src[2 * y][2 * x + 1] - src[2 * y + 1][2 * x] + src[2 * y + 1][2 * x + 1]) * 0.5;
+            dst[y + (height >> (k + 1))][x + (width >> (k + 1))] = dd;
+          }
+        }
+        src = dst;
+      }
+      return src;
+    }
+
+    async function update_obfuscated() {
+      var a = ctx_draw.getImageData(0, 0, ctx_draw.canvas.width, ctx_draw.canvas.height);
+      var adata = a.data;
+      original_list = [];
+      for (var i = 0; i < 128; i++) {
+        array_tt = [];
+        for (var j = 0; j < 128; j++) {
+          array_tt.push(adata[256 * 8 * i + 8 * j + 3]);
+        }
+        original_list.push(array_tt);
+      }
+      wavelets = HaarWaveletTrans(original_list, 3);
+      min = 0;
+      multiplier = 1;
+      out_array = new Uint8ClampedArray(adata.length / 4)
+      for (var i = 0; i < 128; i++) {
+        for (var j = 0; j < 128; j++) {
+          newValue = (wavelets[i][j] - min) * multiplier;
+          out_array[128 * 4 * i + 4 * j] = 0;
+          out_array[128 * 4 * i + 4 * j + 1] = 0;
+          out_array[128 * 4 * i + 4 * j + 2] = 0;
+          out_array[128 * 4 * i + 4 * j + 3] = newValue;
+        }
+      }
+      data_out = new ImageData(out_array, 128, 128)
+      ctx_obf.putImageData(data_out, 0, 0);
+    }
+  </script>
+
+  <h1 class="unnumbered" id="Wavelet Mask Explanations">Wavelet Mask Explanations</h1>
+<p>Now that we are familiar with wavelets, let’s go back to explaining neural nets. We can also generate a mask-based
+    explanation in the wavelet basis by optimizing a mask on the wavelet coefficients of an image. When we mask wavelet
+    coefficients, we keep a piece-wise smooth image because wavelets sparsely represent piece-wise smooth images well.
+    After masking wavelet coefficients, we can visualize the wavelet mask in pixel space by applying the inverse wavelet
+    transform to the wavelet coefficients. The result is a piece-wise smooth image that suffices to keep the
+    classification decision. Irrelevant image regions are blurred or black, and fine details that are kept are relevant
+    to the classifier. To contrast the explanation from the original image, we visualize the wavelet-based explanation
+    in grayscale. 
+    When we mask in the wavelet basis, we still have to choose the sparsity parameter <span
+      class="math inline">\(\lambda\)</span>, which controls how many coefficients are masked. Larger <span
+      class="math inline">\(\lambda\)</span> will mask more wavelet coefficients and thus blur or black out more of the
+    image. A good <span class="math inline">\(\lambda\)</span> deletes not too little and not too much information in
+    the image. We found that wavelet-based explanations can convey really interesting explanatory insight and is often visually more appealing than their jittery pixel-mask counterparts.  Try it yourself and play around below by choosing an image and the sparsity parameter <span
+      class="math inline">\(\lambda\)</span> for the mask.</p>
+
+  <figure>
+    <div class="toolbar">
+    <select id="ground_image">
+      <option value="blackswan">Black swan</option>
+      <option value="dalmatian" selected>Dalmatian</option>	
+      <option value="airplane">Plane</option>
+      <option value="bear">Bear</option>
+      <option value="bird">Spoonbill bird</option>
+      <option value="deer">Deer</option>
+      <option value="elephant1">Elephant</option>
+      <option value="fox1">Fox</option>
+      <option value="kangaroo">Kangaroo</option>
+      <option value="leopard">Leopard</option>
+      <option value="scorpion">Scorpion</option>
+      <option value="lighthouse">Lighthouse</option>
+      <option value="zebra">Zebra</option>
+    </select><input id="slider" type="range" min="0" max="10000" />
+    <div>&lambda; = <span id="lambda_output"> </span></div>
+	</div>
+    <div id="images" class="flex-container">
+      <div class="flex-content">
+        <p class="imageheadline">Original</p>
+        <img class="im" id="original" src="kobe_small.jpg" width="256" height="256">
+      </div>
+      <div class="flex-content">
+        <p class="imageheadline">Wavelet Mask</p>
+        <img class="im" id="explanation" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" width="256"
+          height="256">
+      </div>
+      <div class="flex-content">
+        <p class="imageheadline">Pixel Mask</p>
+        <img class="im" id="explanation2" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" width="256"
+          height="256">
+      </div>
+    </div>
+  </figure>
+
+  <script>
+
+    function preloadImage(url) {
+      var img = new Image();
+      img.src = url;
+    }
+    ar1 = Array.from({ length: 9 }, (x, i) => i + 1);
+    ar2 = Array.from({ length: 50 }, (x, i) => 10 * (i + 1));
+    possible_outputs = ar1.concat(ar2);
+    function preloadAllImage() {
+      for (var i = 0; i < possible_outputs.length; i++) {
+        preloadImage("website_examples/" + im_path + "/" + im_path + "-pixelrde-lambda=" + possible_outputs[i] + ".png");
+        preloadImage("website_examples/" + im_path + "/" + im_path + "-cartoonx-lambda=" + possible_outputs[i] + ".png");
+      }
+    }
+    img = document.getElementById("original");
+    img2 = document.getElementById("explanation");
+    var select3 = document.getElementById('ground_image');
+    im_path = 'dalmatian';
+    lambda_value = 30;
+    update_image_right();
+
+    setTimeout(preloadAllImage, 2000);
+    select3.addEventListener('change', function () {
+      im_path = select3.value;
+      update_image_right();
+      setTimeout(preloadAllImage, 500);
+    });
+
+    function LogSlider(options) {
+      options = options || {};
+      this.minpos = options.minpos || 0;
+      this.maxpos = options.maxpos || 100;
+      this.minlval = Math.log(options.minval || 1);
+      this.maxlval = Math.log(options.maxval || 100000);
+
+      this.scale = (this.maxlval - this.minlval) / (this.maxpos - this.minpos);
+    }
+
+    LogSlider.prototype = {
+      // Calculate value from a slider position
+      value: function (position) {
+        goal = Math.exp((position - this.minpos) * this.scale + this.minlval);
+        //console.log(goal)
+        var closest = possible_outputs.reduce(function (prev, curr) {
+          return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
+        });
+        return closest
+      },
+      // Calculate slider position from a value
+      position: function (value) {
+        return this.minpos + (Math.log(value) - this.minlval) / this.scale;
+      }
+    };
+
+
+    function update_image_right() {
+      img.src = "website_examples/" + im_path + "/" + im_path + ".png";
+      $("#lambda_output").text(lambda_value);
+      $("#explanation").attr("src", "website_examples/" + im_path + "/" + im_path + "-cartoonx-lambda=" + lambda_value + ".png");
+      $("#explanation2").attr("src", "website_examples/" + im_path + "/" + im_path + "-pixelrde-lambda=" + lambda_value + ".png");
+    }
+
+    var logsl = new LogSlider({ maxpos: 10000, minval: possible_outputs[0], maxval: possible_outputs[possible_outputs.length - 1] });
+
+    $('#slider').on('input', function () {
+      lambda_value = logsl.value(+$(this).val());
+      update_image_right()
+    });
+
+    $('#value').on('keyup', function () {
+      var pos = logsl.position(+$(this).val());
+      $('#slider').val(pos);
+    });</script>
+  <h1 class="unnumbered" id="outlook">Outlook</h1>
+  <p>Wavelets are established tools in signal processing and have found various applications in data science and machine learning. More recently, wavelets were also used to explain neural network decisions, generating novel piece-wise smooth wavelet-based explanations that are particularly suitable for image classifiers. We think wavelet-based explanations
+    will be a useful addition to the practitioners’ explainability toolbox and inspire researchers to further improve
+    explanation methods.</p>
+  <h1 class="unnumbered" id="acknowledgment">Acknowledgments</h1>
+  <p>We thank Ron Levie, Manjot Singh, Chirag Varun Shukla, and other members of the Bavarian AI Chair for Mathematical Foundations of Artificial Intelligence for their support and feedback.</p>
+  <p>This article and the widgets are licensed under Creative Commons Attribution <a
+      href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0</a>. Image credits: <a
+      href="https://pixabay.com/photos/black-swan-red-beak-swim-water-3703988/">black swan</a>, <a
+      href="https://commons.wikimedia.org/wiki/File:Tanzanian_Animals.jpg">zebra</a>, <a
+      href="https://pixnio.com/fauna-animals/kangaroo-animal">kangaroo</a>, <a
+      href="https://unsplash.com/photos/I3C1sSXj1i8">leopard</a>, <a
+      href="https://commons.wikimedia.org/wiki/File:Scorpion_(3).jpg">scorpion</a>, <a	
+      href="https://en.wikipedia.org/wiki/File:Pigeon_Point_Lighthouse_(2016).jpg">lighthouse</a>, <a
+      href="https://www.flickr.com/photos/vizzzual-dot-com/2274726982">airplane</a>, <a
+      href="https://pxhere.com/en/photo/1636306">elephant</a></p>
+	  
+  <h1 class="unnumbered" id="acknowledgment">References</h1>
+	  <ol style="font-size: 15px;">
+	  <li id="amershi2015modeltracker">
+	  <span class="title">"Why should I trust you?" Explaining the predictions of any classifier</span> 
+	  <a href="https://arxiv.org/pdf/1602.04938.pdf?source=post_page---------------------------">[PDF]</a><br>
+	  Ribeiro, M. T., Singh, S., & Guestrin, C. (2016, August). In Proceedings of the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 1135-1144).
+	  <a href="https://dl.acm.org/doi/10.1145/2939672.2939778" style="text-decoration:inherit;">DOI: 10.1145/2939672.2939778</a>
+	  </li>
+	  
+	  <li id="rde">
+	  <span class="title">A Rate-Distortion Framework for Explaining Neural Network Decisions</span> 
+	  <a href="https://arxiv.org/pdf/1905.11092">[PDF]</a><br>
+	  MacDonald, J., Wäldchen, S., Hauch, S., & Kutyniok, G. (2019). arXiv preprint arXiv:1905.11092.
+	  </li>
+	  
+	  <li id="onpix">
+	  <span class="title">On Pixel-Wise Explanations for Non-Linear Classifier Decisions by Layer-Wise Relevance Propagation</span> 
+	  <a href="https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0130140&type=printable">[PDF]</a><br>
+	  Bach, S., Binder, A., Montavon, G., Klauschen, F., Müller, K. R., & Samek, W. (2015). PloS one, 10(7), e0130140.
+	  <a href="https://doi.org/10.1371/journal.pone.0130140" style="text-decoration:inherit;">DOI: 10.1371/journal.pone.0130140</a>
+	  </li>
+	  
+	  <li id="indist">
+	  <span class="title">In-Distribution Interpretability for Challenging Modalities</span> 
+	  <a href="https://arxiv.org/pdf/2007.00758.pdf">[PDF]</a><br>
+	  Heiß, C., Levie, R., Resnick, C., Kutyniok, G., & Bruna, J. (2020). arXiv preprint arXiv:2007.00758.
+	  </li>
+	  
+	  <li id="arde">
+	  <span class="title">A Rate-Distortion Framework for Explaining Black-Box Model Decisions</span> 
+	  <a href="https://www.researchgate.net/publication/355392126_A_Rate-Distortion_Framework_for_Explaining_Black-box_Model_Decisions">[PDF]</a><br>
+	  Kolek, S., Nguyen, D. A., Levie, R., Bruna, J., & Kutyniok, G. (2022). In International Workshop on Extending Explainable AI Beyond Deep Models and Classifiers (pp. 91-115). Springer, Cham.
+	  <a href="https://doi.org/10.1007/978-3-031-04083-2_6" style="text-decoration:inherit;">DOI: 10.1007/978-3-031-04083-2_6</a>
+	  </li>
+	  
+	  <li id="cartx">
+	  <span class="title">Cartoon Explanations of Image Classifiers</span> 
+	  <a href="https://arxiv.org/pdf/2110.03485">[PDF]</a><br>
+	  Kolek, S., Nguyen, D. A., Levie, R., Bruna, J., & Kutyniok, G. (2021). arXiv preprint arXiv:2110.03485.
+	  </li>
+	  
+	  <li id="wavelettour">
+	  <span class="title">A Wavelet Tour of Signal Processing</span> 
+	  <a href="http://www.di.ens.fr/~mallat/papiers/WaveletTourChap1-2-3.pdf">[PDF]</a><br>
+	  Mallat, S. (1999). Elsevier.
+	  <a href="" style="text-decoration:inherit;"></a>
+	  </li>
+	  
+	  <li id="interpretable">
+	  <span class="title">Interpretable Explanations of Black Boxes by Meaningful Perturbation</span> 
+	  <a href="https://openaccess.thecvf.com/content_ICCV_2017/papers/Fong_Interpretable_Explanations_of_ICCV_2017_paper.pdf">[PDF]</a><br>
+	  Fong, R. C., & Vedaldi, A. (2017). In Proceedings of the IEEE international conference on computer vision (pp. 3429-3437).
+	  </li>
+	  
+	  <li id="thislooks">
+	  <span class="title">This Looks Like That: Deep Learning for Interpretable Image Recognition</span> 
+	  <a href="https://openaccess.thecvf.com/content_ICCV_2017/papers/Fong_Interpretable_Explanations_of_ICCV_2017_paper.pdf">[PDF]</a><br>
+	  Chen, C., Li, O., Tao, D., Barnett, A., Rudin, C., & Su, J. K. (2019). Advances in neural information processing systems, 32.
+	  </li>
+	  
+	  <li id="">
+	  <span class="title">Axiomatic Attribution for Deep Networks</span> 
+	  <a href="http://proceedings.mlr.press/v70/sundararajan17a/sundararajan17a.pdf">[PDF]</a><br>
+	  Sundararajan, M., Taly, A., & Yan, Q. (2017, July). In International conference on machine learning (pp. 3319-3328). PMLR.
+	  </li>
+	  
+	  <li id="">
+	  <span class="title">A Unified Approach to Interpreting Model Predictions</span> 
+	  <a href="https://proceedings.neurips.cc/paper/2017/file/8a20a8621978632d76c43dfd28b67767-Paper.pdf">[PDF]</a><br>
+	  Lundberg, S. M., & Lee, S. I. (2017). Advances in neural information processing systems, 30.1
+	  </li>
+	  
+	  <!--
+	  <li id="">
+	  <span class="title">title</span> 
+	  <a href="">[PDF]</a><br>
+	  
+	  <a href="" style="text-decoration:inherit;"></a>
+	  </li>
+	  -->
+	  
+	  </ol>
+</body>
+
+</html>
