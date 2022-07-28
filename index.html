@@ -1153,19 +1153,19 @@ We compare the wavelet transform to the Fourier transform in the Table above and
   <figure>
     <div class="toolbar">
     <select id="ground_image">
-      <option value="blackswan">Black swan</option>
-      <option value="dalmatian" selected>Dalmatian</option>	
+      <option value="leopard1">Leopard</option>
+      <option value="dalmatian" selected>Dalmatian</option> 
       <option value="airplane">Plane</option>
-      <option value="bear">Bear</option>
       <option value="bird">Spoonbill bird</option>
       <option value="deer">Deer</option>
       <option value="elephant1">Elephant</option>
       <option value="fox1">Fox</option>
       <option value="kangaroo">Kangaroo</option>
-      <option value="leopard">Leopard</option>
+      <option value="blackswan">Black swan</option>
+      <option value="bear">Bear</option>
       <option value="scorpion">Scorpion</option>
-      <option value="lighthouse">Lighthouse</option>
-      <option value="zebra">Zebra</option>
+      <option value="lighthouse1">Lighthouse</option>
+      <option value="zebra1">Zebra</option>
     </select><input id="slider" type="range" min="0" max="10000" />
     <div>&lambda; = <span id="lambda_output"> </span></div>
 	</div>
@@ -1205,7 +1205,7 @@ We compare the wavelet transform to the Fourier transform in the Table above and
     img = document.getElementById("original");
     img2 = document.getElementById("explanation");
     var select3 = document.getElementById('ground_image');
-    im_path = 'dalmatian';
+    im_path = 'leopard1';
     lambda_value = 30;
     update_image_right();
 
