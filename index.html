@@ -365,10 +365,16 @@
 	
 	.toolbar{
 	display: flex;
+	flex-direction: row;
+flex-wrap: wrap;
 	}
 	
 	.title{
 	font-style: italic;
+	}
+	
+	.slides3{
+	height: 256px;
 	}
   </style>
 </head>
@@ -1088,9 +1094,21 @@ We compare the wavelet transform to the Fourier transform in the Table above and
     <option value="slide2">El Niño</option>
     <option value="slide3" selected>Sine</option>
 </select>
-    <img class="slides2" id="slide1" src="wavelet-figures/delta.png">
-    <img class="slides2" id="slide2" src="wavelet-figures/nino.png">
-    <img class="slides2" id="slide3" src="wavelet-figures/sine.png" style="display: block;">
+<div class="flex-container" id="slide1" style="display: none;">
+    <img class="slides3" src="wavelet-figures/delta1.png">
+    <img class="slides3" src="wavelet-figures/delta2.png">
+    <img class="slides3" src="wavelet-figures/delta3.png">
+</div>
+<div class="flex-container" id="slide2" style="display: none;">
+    <img class="slides3" src="wavelet-figures/nino1.png">
+    <img class="slides3" src="wavelet-figures/nino2.png">
+    <img class="slides3" src="wavelet-figures/nino3.png">
+</div>
+<div class="flex-container" id="slide3">
+    <img class="slides3" src="wavelet-figures/sine1.png">
+    <img class="slides3" src="wavelet-figures/sine2.png">
+    <img class="slides3" src="wavelet-figures/sine3.png">
+</div>
 </figure>
   <script>
     var selectim = document.getElementById('imselector');
@@ -1100,7 +1118,7 @@ We compare the wavelet transform to the Fourier transform in the Table above and
       var x = document.getElementById(images[i]);
 	console.log(x);
       if(selectim.value == images[i]){
-        x.style.display = "block";
+        x.style.display = "";
 	  }
 	  else{
         x.style.display = "none";
@@ -1110,7 +1128,7 @@ We compare the wavelet transform to the Fourier transform in the Table above and
   </script>
 
 <p>
- Now that we understand the wavelet transform in one dimension, we can go back to images, which are two-dimensional signals. Just like the Fourier transform, the wavelet transform can be extended to two dimensions. Since images are discrete objects, we use the discrete wavelet transform, which works similarly to the discrete Fourier transform. You can drawing in the box below to get a live visualization of the two-dimensional discrete wavelet transform for the <a href="https://en.wikipedia.org/wiki/Haar_wavelet">Haar wavelet</a>. Roughly speaking, a single Haar wavelet can represent a square. With that, it can fairly accurately represent images with fewer non-zero numbers. If you draw on the left side below, it will automatically calculate the Haar wavelet transform of the drawn image and represent its wavelet coefficients on the right side. Each quadrant represents a wavelet coefficient <span class="math inline">\(\mathcal{W}(a,b)\)</span> at a scale <span class="math inline">\(a\)</span> and pixel position <span class="math inline">\(b\)</span>. The small scales correspond to large quadrants and fine details features. For each scale <span class="math inline">\(a\)</span>, there are three quadrants representing horizontal, vertical, and diagonal wavelet filtering. Try drawing a larger region, and you will see that most of the image on the right remains blank. This is because natural images tend to be <em>sparse</em> in the wavelet-domain (few non-zero wavelet coefficients), a property which is also used by image compression algorithms.
+ Now that we understand the wavelet transform in one dimension, we can go back to images, which are two-dimensional signals. Just like the Fourier transform, the wavelet transform can be extended to two dimensions. Since images are discrete objects, we use the discrete wavelet transform, which works similarly to the discrete Fourier transform. You can drawing in the box below to get a live visualization of the two-dimensional discrete wavelet transform for the <a href="https://en.wikipedia.org/wiki/Haar_wavelet">Haar wavelet</a>. Roughly speaking, a single Haar wavelet can represent a square. With that, it can fairly accurately represent images with fewer non-zero numbers. If you draw on the left side below, it will automatically calculate the Haar wavelet transform of the drawn image and represent its wavelet coefficients on the right side. Each quadrant represents a wavelet coefficient <span class="math inline">\(\mathcal{W}(a,b)\)</span> at a scale <span class="math inline">\(a\)</span> and pixel position <span class="math inline">\(b.\)</span> The small scales correspond to large quadrants and fine details features. For each scale <span class="math inline">\(a\)</span>, there are three quadrants representing horizontal, vertical, and diagonal wavelet filtering. Try drawing a larger region, and you will see that most of the image on the right remains blank. This is because natural images tend to be <em>sparse</em> in the wavelet-domain (few non-zero wavelet coefficients), a property which is also used by image compression algorithms.
 </p>
 
   <select id="tool">
