@@ -391,7 +391,6 @@
   <div>
     <img class="slides" src="website-cartoonx-cover/airplane.png">
     <img class="slides" src="website-cartoonx-cover/bear.png">
-    <img class="slides" src="website-cartoonx-cover/bird.png">
     <img class="slides" src="website-cartoonx-cover/dog.png">
     <img class="slides" src="website-cartoonx-cover/kobe.png">
   </div>
@@ -851,7 +850,7 @@
 </p>
 
 <h1 class="unnumbered" id="Wavelets">Wavelets</h1>
-<figure>
+<figure style="align-items: center;display: flex;flex-direction: column;">
 <div style="display: flex;flex-direction: row;align-items: center;justify-content: center;flex-wrap: wrap;">
 <div style="align-content: center;text-align: center;">
 <p style="margin-top: 5px;margin-bottom: 5px;">Scale</p>
@@ -928,22 +927,6 @@ svg_morlet.append("g")
 svg_morlet.append("g")
   .attr("transform", `translate(0,0)`)
   .call(yAxis)
-
-// Axes label
-svg_morlet.append("text")
-  .attr("class", "x label")
-  .attr("text-anchor", "end")
-  .attr("x", widthsvg / 2 + 5)
-  .attr("y", heightsvg + 35)
-  .text("x");
-
-svg_morlet.append("text")
-  .attr("class", "y label")
-  .attr("text-anchor", "end")
-  .attr("y", -35)
-  .attr("x", -heightsvg / 2)
-  .attr("transform", "rotate(-90)")
-  .html("y")
 
 
 // Some different mother wavelets
@@ -1343,7 +1326,6 @@ We compare the wavelet transform to the Fourier transform in the Table above and
       <option value="leopard1"selected>Leopard</option>
       <option value="dalmatian">Dalmatian</option> 
       <option value="airplane">Plane</option>
-      <option value="bird">Spoonbill bird</option>
       <option value="deer">Deer</option>
       <option value="elephant1">Elephant</option>
       <option value="fox1">Fox</option>
@@ -1463,7 +1445,12 @@ We compare the wavelet transform to the Fourier transform in the Table above and
       href="https://commons.wikimedia.org/wiki/File:Scorpion_(3).jpg">scorpion</a>, <a	
       href="https://en.wikipedia.org/wiki/File:Pigeon_Point_Lighthouse_(2016).jpg">lighthouse</a>, <a
       href="https://www.flickr.com/photos/vizzzual-dot-com/2274726982">airplane</a>, <a
-      href="https://pxhere.com/en/photo/1636306">elephant</a></p>
+      href="https://pxhere.com/en/photo/1636306">elephant</a>, <a
+      href="https://www.flickr.com/photos/sue90ca/4468661668">dalmatian</a>, <a
+      href="https://stocksnap.io/photo/deer-animal-RMUO9BTARJ">deer</a>, <a
+      href="https://www.flickr.com/photos/iip-photo-archive/51727613015">fox</a>, <a
+      href="https://commons.wikimedia.org/wiki/File:Kamchatka_Brown_Bear_near_Dvuhyurtochnoe_on_2015-07-23.jpg">bear</a>.
+	  </p>
 	  
   <h1 class="unnumbered" id="acknowledgment">References</h1>
 	  <ol style="font-size: 15px;">
