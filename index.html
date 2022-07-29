@@ -21,11 +21,8 @@
   <script src="jquery-3.6.0.min.js"></script>
   <script defer src="tfjs.js"></script>
   <script id="mbnet" defer src="mobilenet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
+  <script src="mathjax/tex-chtml-full.js"></script>
   <script src="d3.v7.min.js"></script>
-  <!--[if lt IE 9]>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
-  <![endif]-->
   
   <style>
     html {
@@ -458,12 +455,12 @@ flex-wrap: wrap;
       <option>2</option>
       <option>3</option>
       <option>4</option>
-      <option selected>5</option>
+      <option>5</option>
       <option>6</option>
       <option>7</option>
       <option>8</option>
       <option>16</option>
-      <option>32</option>
+      <option selected>32</option>
       <option>64</option>
     </select>
     <select id="fill_select">
@@ -474,8 +471,8 @@ flex-wrap: wrap;
       <option value="295">Bear</option>
       <option value="100">Black swan</option>
       <option value="251" selected>Dalmatian</option>
-      <option value="385">Elephant</option>
-      <option value="277">Fox</option>
+      <option value="437">Lighthouse</option>
+      <option value="340">Zebra</option>
     </select>
     <button id="clear_2" type="button">Clear Canvas</button>
     <div class="flex-container">
@@ -531,7 +528,7 @@ flex-wrap: wrap;
       var img_2 = new Image();
       img_2.crossOrigin = 'anonymous';
       img_2.src = 'website_examples/dalmatian/dalmatian2.png';
-      var target_label = 1;
+      var target_label = 251;
       var canvas_original_2 = document.getElementById('canvas_original_2');
       var ctx_original = canvas_original_2.getContext('2d');
       img_2.onload = () => {
@@ -596,13 +593,13 @@ flex-wrap: wrap;
             img_2.src = 'website_examples/bear/bear2.png';
             target_label = 295;
             break;
-          case "385":
-            img_2.src = 'website_examples/elephant1/elephant12.png';
-            target_label = 385;
+          case "437":
+            img_2.src = 'website_examples/lighthouse1/lighthouse12.png';
+            target_label = 437;
             break;
-          case "277":
-            img_2.src = 'website_examples/fox1/fox12.png';
-            target_label = 277;
+          case "340":
+            img_2.src = 'website_examples/zebra1/zebra12.png';
+            target_label = 340;
             break;
         }
       });
@@ -636,7 +633,8 @@ flex-wrap: wrap;
             distortion = tf.losses.meanSquaredError(result, tf.tile(result_original, [batch_size, 1]))
             document.getElementById("nn_out").innerHTML = (await distortion.data() * 1000).toFixed(3);
             max_index = indexOfMax(result_mean)
-            document.getElementById("top").innerHTML = "'" + (await labels)[max_index][1] + "' (" + Number.parseFloat(result_mean[max_index] * 100).toFixed(2) + "%)"
+			topLabel = (await labels)[max_index][1].replace('beacon', 'lighthouse').replace('wallaby', 'kangaroo');
+            document.getElementById("top").innerHTML = "'" + topLabel + "' (" + Number.parseFloat(result_mean[max_index] * 100).toFixed(2) + "%)"
 
             document.getElementById("nn").innerHTML = originalButtonString;
             tf.engine().endScope();
