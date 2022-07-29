@@ -867,7 +867,7 @@ flex-wrap: wrap;
     relevant piece-wise smooth image regions. This is where the so-called <a
       href="https://en.wikipedia.org/wiki/Wavelet_transform">wavelet transform</a> can help us. By applying the wavelet
     transformation, we still represent the images as an array of numbers, but instead of the brightness of a single
-    pixel, each number can represent a larger structure. The wavelet transform tends to be not as widely known as the Fourier transform outside the signal-processing community. Therefore, we will briefly explain the wavelet transform, which is an essential tool in signal-processing and has plenty of applications beyond explainability in data science and machine learning.
+    pixel, each number can represent a larger structure. The wavelet transform tends to be not as widely known as the Fourier transform outside the signal processing community. Therefore, we will briefly explain the wavelet transform, which is an essential tool in signal processing and has plenty of applications beyond explainability in data science and machine learning.
 </p>
 
 <h1 class="unnumbered" id="Wavelets">Wavelets</h1>
@@ -1085,7 +1085,7 @@ The Fourier Transform has full frequency resolution but no spatial resolution, m
     </table>
   </div>
 <p>
-We compare the wavelet transform to the Fourier transform in the Table above and the figure below. In the figure below click on the button to select beween three signals and notice that the wavelet transform can localize the sine oscillations and the delta function peak, as well as give time-frequency information for the signal in the El Niño dataset (quarterly measurements of the sea surface temperature from 1871 up to 1997 throughout the equatorial Pacific). 
+We compare the wavelet transform to the Fourier transform in the Table above and the figure below. In the figure below click on the button to select beween three signals. You might notice that the wavelet transform can localize the sine oscillations and the delta function peak, as well as give time-frequency information for the signal in the El Niño dataset (quarterly measurements of the sea surface temperature from 1871 up to 1997 throughout the equatorial Pacific). 
 </p>
 <figure>
 <select id="imselector" style="margin-bottom: 15px;">
@@ -1127,7 +1127,7 @@ We compare the wavelet transform to the Fourier transform in the Table above and
   </script>
 
 <p>
- Now that we understand the wavelet transform in one dimension, we can go back to images, which are two-dimensional signals. Just like the Fourier transform, the wavelet transform can be extended to two dimensions. Since images are discrete objects, we use the discrete wavelet transform, which works similarly to the discrete Fourier transform. You can drawing in the box below to get a live visualization of the two-dimensional discrete wavelet transform for the <a href="https://en.wikipedia.org/wiki/Haar_wavelet">Haar wavelet</a>. Roughly speaking, a single Haar wavelet can represent a square. With that, it can fairly accurately represent images with fewer non-zero numbers. If you draw on the left side below, it will automatically calculate the Haar wavelet transform of the drawn image and represent its wavelet coefficients on the right side. Each quadrant represents a wavelet coefficient <span class="math inline">\(\mathcal{W}(a,b)\)</span> at a scale <span class="math inline">\(a\)</span> and pixel position <span class="math inline">\(b.\)</span> The small scales correspond to large quadrants and fine details features. For each scale <span class="math inline">\(a\)</span>, there are three quadrants representing horizontal, vertical, and diagonal wavelet filtering. Try drawing a larger region, and you will see that most of the image on the right remains blank. This is because natural images tend to be <em>sparse</em> in the wavelet-domain (few non-zero wavelet coefficients), a property which is also used by image compression algorithms.
+ Now that we understand the wavelet transform in one dimension, we can go back to images, which are two-dimensional signals. Just like the Fourier transform, the wavelet transform can be extended to two dimensions. Since images are discrete objects, we use the discrete wavelet transform, which works similarly to the discrete Fourier transform. You can draw in the box below to get a live visualization of the two-dimensional discrete wavelet transform for the <a href="https://en.wikipedia.org/wiki/Haar_wavelet">Haar wavelet</a>. Roughly speaking, a single Haar wavelet can represent a square. With that, it can fairly accurately represent images with fewer non-zero numbers. If you draw on the left side below, it will automatically calculate the Haar wavelet transform of the drawn image and represent its wavelet coefficients on the right side. Each quadrant represents a wavelet coefficient <span class="math inline">\(\mathcal{W}(a,b)\)</span> at a scale <span class="math inline">\(a\)</span> and pixel position <span class="math inline">\(b.\)</span> The small scales correspond to large quadrants and fine details features. For each scale <span class="math inline">\(a\)</span>, there are three quadrants representing horizontal, vertical, and diagonal wavelet filtering. Try drawing a larger region, and you will see that most of the image on the right remains blank. This is because natural images tend to be <em>sparse</em> in the wavelet domain (few non-zero wavelet coefficients), a property which is also used by image compression algorithms.
 </p>
 
   <select id="tool">
@@ -1350,7 +1350,7 @@ We compare the wavelet transform to the Fourier transform in the Table above and
       class="math inline">\(\lambda\)</span>, which controls how many coefficients are masked. Larger <span
       class="math inline">\(\lambda\)</span> will mask more wavelet coefficients and thus blur or black out more of the
     image. A good <span class="math inline">\(\lambda\)</span> deletes not too little and not too much information in
-    the image. We found that wavelet-based explanations can convey really interesting explanatory insight and is often visually more appealing than their jittery pixel-mask counterparts.  Try it yourself and play around below by choosing an image and the sparsity parameter <span
+    the image. We found that wavelet-based explanations can convey interesting explanatory insight and are often visually more appealing than their jittery pixel-mask counterparts. Try it yourself and play around below by choosing an image and the sparsity parameter <span
       class="math inline">\(\lambda\)</span> for the mask.</p>
 
   <figure>
@@ -1467,11 +1467,13 @@ We compare the wavelet transform to the Fourier transform in the Table above and
   <p>Wavelets are established tools in signal processing and have found various applications in data science and machine learning. More recently, wavelets were also used to explain neural network decisions, generating novel piece-wise smooth wavelet-based explanations that are particularly suitable for image classifiers. We think wavelet-based explanations
     will be a useful addition to the practitioners’ explainability toolbox and inspire researchers to further improve
     explanation methods.</p>
+	<p>For a more complete explanation, see the <a href="https://arxiv.org/abs/2110.03485">original paper</a>.</p>
+	
   <h1 class="unnumbered" id="acknowledgment">Acknowledgments</h1>
   <p>We thank Ron Levie, Manjot Singh, Chirag Varun Shukla, and other members of the Bavarian AI Chair for Mathematical Foundations of Artificial Intelligence for their support and feedback.</p>
   <p>This article and the widgets are licensed under Creative Commons Attribution <a
       href="https://creativecommons.org/licenses/by/4.0/">CC-BY 4.0</a>. Image credits: <a
-      href="https://pixabay.com/photos/black-swan-red-beak-swim-water-3703988/">black swan</a>, <a
+      href="https://pixabay.com/photos/black-swan-red-beak-swim-water-3703988/">Black swan</a>, <a
       href="https://commons.wikimedia.org/wiki/File:Tanzanian_Animals.jpg">zebra</a>, <a
       href="https://pixnio.com/fauna-animals/kangaroo-animal">kangaroo</a>, <a
       href="https://unsplash.com/photos/I3C1sSXj1i8">leopard</a>, <a
