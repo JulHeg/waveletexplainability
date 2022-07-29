@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 
 <head>
   <title>Explaining Image Classifiers with Wavelets</title>
@@ -21,7 +21,7 @@
   <script src="jquery-3.6.0.min.js"></script>
   <script defer src="tfjs.js"></script>
   <script id="mbnet" defer src="mobilenet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"></script>
   <script src="d3.v7.min.js"></script>
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
@@ -421,7 +421,8 @@
     input <span class="math inline">\({\color{orange}x}\in\mathbb{R}^d\)</span> that masks the <em>irrelevant</em> input features. The mask captures the relevant components in <span
       class="math inline">\({\color{orange}x}\)</span> if they determine the model output. To test that, we require that for all
     meaningful perturbations <span class="math inline">\(\xi\in\mathbb{R}^d\)</span> the so-called <em>distortion</em>
-    is small: <span class="math display">\[\begin{aligned}
+    is small:</p>
+	<p style="overflow-x: auto;"><span class="math display">\[\begin{aligned}
       \label{eq: model output diff}
       \|f_\theta({\color{orange}\underbrace{x}_{\text{input}}}) - f_\theta({\color{Blue}\underbrace{m \odot x +
       (1-m)\odot \xi}_{\text{perturbed input}}}) \|_2\approx 0.\end{aligned}\]</span>
@@ -809,28 +810,43 @@
       class="math inline">\(\Xi\)</span> is a pre-chosen probability distribution (e.g. Gaussian). We say a sparse mask <span
       class="math inline">\(m\in\{0,1\}^d\)</span> is a good explanation mask for <span class="math inline">\(x\)</span>
     if the model output for <span><span class="math inline">\({\color{orange}x}\)</span></span> is on average approximately the same as
-    for the masked and perturbed input <span><span class="math inline">\(\color{Blue} m \odot x + (1-m)\odot \xi\)</span></span>. Formally, this condition is <span class="math display">\[\begin{aligned}
+    for the masked and perturbed input <span><span class="math inline">\(\color{Blue} m \odot x + (1-m)\odot \xi\)</span></span>. Formally, this condition is
+	</p>
+	<p style="overflow-x: auto;"><span class="math display">\[\begin{aligned}
       \label{eq: expected model output diff}
       {\color{black}\mathop{\mathbb{E}}_{\xi\sim\Xi}\Big[\|f_\theta({\color{orange}x}) - f_\theta({\color{Blue}m \odot x
-      + (1-m)\odot \xi}) \|_2\Big]\approx 0.}\end{aligned}\]</span> Note that the trivial mask <span
+      + (1-m)\odot \xi}) \|_2\Big]\approx 0.}\end{aligned}\]</span>
+	  </p>
+	<p>
+	  Note that the trivial mask <span
       class="math inline">\(m = \begin{bmatrix}1 &amp; \dots &amp; 1 \end{bmatrix}^T\)</span> always satisfies this
     condition with strict equality. However, that mask does not provide any explanatory information because it does not
     tell us which features are <em>not relevant for the classification decision</em>. To find useful and concise
     explanatory information about <span class="math inline">\(f_\theta({\color{orange}x})\)</span>, we need to find a
     <em>sparse</em> mask <span class="math inline">\({m}\)</span> satisfying the condition above. Finding the explanation mask
-    <span class="math inline">\(m\)</span> becomes an optimization problem: <span class="math display">\[\begin{aligned}
+    <span class="math inline">\(m\)</span> becomes an optimization problem:
+	</p>
+	<p style="overflow-x: auto;">
+	<span class="math display">\[\begin{aligned}
       \label{opt: explanation mask}
       \min_{{m}\in\{0,1\}^d} \mathop{\mathbb{E}}_{\xi\sim\Xi}\Big[\|f_\theta({\color{orange}x}) -
       f_\theta({\color{Blue}m \odot x + (1-m)\odot \xi}) \|_2\Big] \;\;\;\;\;\; \textrm{s.t.}\;\; \|{m}\|_0 =
-      l,\end{aligned}\]</span> where <span class="math inline">\(0&lt;l&lt;d\)</span> is a pre-specified desired
+      l,\end{aligned}\]</span>
+</p>
+	<p>	  where <span class="math inline">\(0&lt;l&lt;d\)</span> is a pre-specified desired
     sparsity level. Most interesting applications involve high-dimensional inputs <span
       class="math inline">\({\color{orange}x}\in\mathbb{R}^d\)</span> (e.g. for images <span
       class="math inline">\(d\)</span> is in the order of the number of pixels) and solving the optimization problem
     becomes <a href="https://arxiv.org/abs/1905.11092">computationally infeasible</a>. Still, we can try to
-    approximately solve it by solving the Lagrangian relaxation <span class="math display">\[\begin{aligned}
+    approximately solve it by solving the Lagrangian relaxation
+	</p>
+	<p style="overflow-x: auto;">
+	<span class="math display">\[\begin{aligned}
       \label{opt: lagrangian relaxation}
       \min_{{m}\in[0,1]^d} \mathop{\mathbb{E}}_{\xi\sim\Xi}\Big[\|f_\theta({\color{orange}x}) - f_\theta({\color{Blue}m
-      \odot x + (1-m)\odot \xi}) \|_2\Big] + \lambda \|{m}\|_1,\end{aligned}\]</span> where <span
+      \odot x + (1-m)\odot \xi}) \|_2\Big] + \lambda \|{m}\|_1,\end{aligned}\]</span>
+</p>
+<p>	  where <span
       class="math inline">\(\lambda&gt;0\)</span> determines the sparsity level of the relaxed continuous mask <span
       class="math inline">\(m\in[0,1]^d\)</span>. Although the mask <span class="math inline">\(m\)</span> is no longer
     binary in the relaxed optimization problem, the <span class="math inline">\(\ell_1\)</span>-term promotes sparsity
@@ -1304,7 +1320,7 @@ We compare the wavelet transform to the Fourier transform in the Table above and
     }
   </script>
 
-  <h1 class="unnumbered" id="Wavelet Mask Explanations">Wavelet Mask Explanations</h1>
+  <h1 class="unnumbered">Wavelet Mask Explanations</h1>
 <p>Now that we are familiar with wavelets, let’s go back to explaining neural nets. We can also generate a mask-based
     explanation in the wavelet basis by optimizing a mask on the wavelet coefficients of an image. When we mask wavelet
     coefficients, we keep a piece-wise smooth image because wavelets sparsely represent piece-wise smooth images well.
@@ -1323,7 +1339,7 @@ We compare the wavelet transform to the Fourier transform in the Table above and
   <figure>
     <div class="toolbar">
     <select id="ground_image">
-      <option value="leopard1"selected>Leopard</option>
+      <option value="leopard1" selected>Leopard</option>
       <option value="dalmatian">Dalmatian</option> 
       <option value="airplane">Plane</option>
       <option value="deer">Deer</option>
@@ -1452,7 +1468,7 @@ We compare the wavelet transform to the Fourier transform in the Table above and
       href="https://commons.wikimedia.org/wiki/File:Kamchatka_Brown_Bear_near_Dvuhyurtochnoe_on_2015-07-23.jpg">bear</a>.
 	  </p>
 	  
-  <h1 class="unnumbered" id="acknowledgment">References</h1>
+  <h1 class="unnumbered" id="references">References</h1>
 	  <ol style="font-size: 15px;">
 	  <li id="amershi2015modeltracker">
 	  <span class="title">"Why should I trust you?" Explaining the predictions of any classifier</span> 
@@ -1512,13 +1528,13 @@ We compare the wavelet transform to the Fourier transform in the Table above and
 	  Chen, C., Li, O., Tao, D., Barnett, A., Rudin, C., & Su, J. K. (2019). Advances in neural information processing systems, 32.
 	  </li>
 	  
-	  <li id="">
+	  <li id="axiomatic">
 	  <span class="title">Axiomatic Attribution for Deep Networks</span> 
 	  <a href="http://proceedings.mlr.press/v70/sundararajan17a/sundararajan17a.pdf">[PDF]</a><br>
 	  Sundararajan, M., Taly, A., & Yan, Q. (2017, July). In International conference on machine learning (pp. 3319-3328). PMLR.
 	  </li>
 	  
-	  <li id="">
+	  <li id="aunified">
 	  <span class="title">A Unified Approach to Interpreting Model Predictions</span> 
 	  <a href="https://proceedings.neurips.cc/paper/2017/file/8a20a8621978632d76c43dfd28b67767-Paper.pdf">[PDF]</a><br>
 	  Lundberg, S. M., & Lee, S. I. (2017). Advances in neural information processing systems, 30.1
