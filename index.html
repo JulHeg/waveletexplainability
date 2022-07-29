@@ -22,6 +22,7 @@
   <script defer src="tfjs.js"></script>
   <script id="mbnet" defer src="mobilenet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <script src="d3.v7.min.js"></script>
   <!--[if lt IE 9]>
     <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
   <![endif]-->
@@ -850,7 +851,193 @@
 </p>
 
 <h1 class="unnumbered" id="Wavelets">Wavelets</h1>
+<figure>
+<div style="display: flex;flex-direction: row;align-items: center;justify-content: center;flex-wrap: wrap;">
+<div style="align-content: center;text-align: center;">
+<p style="margin-top: 5px;margin-bottom: 5px;">Scale</p>
+<input type="range" id="scaleSlider" min="1" max="10" value="1" step="0.01">
+</div>
+<div style="align-content: center;text-align: center;margin-left: 10px;margin-right: 10px;">
+<p style="margin-top: 5px;margin-bottom: 5px;">Position</p>
+<input type="range" name="Position" id="posSlider" min="-5" max="5" value="1" step="0.01">
+</div>
+<div style="align-content: center;text-align: center;">
+<p style="margin-top: 1px;margin-bottom: 1px;">Mother wavelet</p>
+<select id="mother_wavelet" style="height: fit-content;">
+      <option value="morlet" selected="">Morlet wavelet</option>
+      <option value="mexican">Mexican Hat</option>	
+      <option value="poisson">Poisson</option>	
+      <option value="shannon">Shannon</option>	
+      <option value="haar">Haar</option>	
+</select><div></div></div>
 
+
+</div>
+
+
+
+
+  <div class="container">
+    <svg id="root"></svg>
+  </div>
+
+
+
+
+<script>
+
+
+// Morlet Wavelet
+
+
+// Convention: https://bl.ocks.org/mbostock/3019563
+const marginsvg = { top: 10, right: 50, bottom: 50, left: 50 },
+  widthsvg = 450 - marginsvg.left - marginsvg.right,
+  heightsvg = 400 - marginsvg.top - marginsvg.bottom;
+
+const svg_morlet = d3.select("#root").attr("width", widthsvg + marginsvg.left + marginsvg.right)
+  .attr("height", heightsvg + marginsvg.top + marginsvg.bottom)
+  .append("g")
+  .attr("transform", "translate(" + marginsvg.left + "," + marginsvg.top + ")");
+
+// Define chart area
+svg_morlet
+  .append("clipPath")
+  .attr("id", "chart-area")
+  .append("rect")
+  .attr("x", 0)
+  .attr("y", 0)
+  .attr("width", widthsvg)
+  .attr("height", heightsvg)
+
+
+// Add Axes
+const xMax = 6;
+const xMin = -6;
+const yMax = 2;
+const yMin = -2;
+
+let xScale = d3.scaleLinear([xMin, xMax], [0, widthsvg])
+let yScale = d3.scaleLinear([yMin, yMax], [heightsvg, 0])
+
+let xAxis = d3.axisBottom(xScale)
+let yAxis = d3.axisLeft(yScale)
+svg_morlet.append("g")
+  .attr("transform", `translate(0,${heightsvg})`)
+  .call(xAxis)
+svg_morlet.append("g")
+  .attr("transform", `translate(0,0)`)
+  .call(yAxis)
+
+// Axes label
+svg_morlet.append("text")
+  .attr("class", "x label")
+  .attr("text-anchor", "end")
+  .attr("x", widthsvg / 2 + 5)
+  .attr("y", heightsvg + 35)
+  .text("x");
+
+svg_morlet.append("text")
+  .attr("class", "y label")
+  .attr("text-anchor", "end")
+  .attr("y", -35)
+  .attr("x", -heightsvg / 2)
+  .attr("transform", "rotate(-90)")
+  .html("y")
+
+
+// Some different mother wavelets
+function morlet(x) {
+  return Math.exp(-(x**2)/2) * Math.cos(5*x);
+  
+}
+
+function mexicanHat(x){
+f = 1;
+return y = (1-2*(Math.PI**2)*(f**2)*(x**2))*Math.exp(-(Math.PI**2)*(f**2)*(x**2));
+}
+
+function poisson(x){
+if(x<=0){
+return 0
+}
+  return (x - 2) / 2 * x * Math.exp(-x);
+}
+
+function shannon(x){
+  return Math.sin(Math.PI*x/2)*Math.cos(3*Math.PI*x/2)*2/x/Math.PI;
+}
+
+function haar(x){
+  if(x<=0){
+return 0;
+}
+else if(x<=1/2){
+return 1;
+}
+else if(x<=1){
+return -1;
+}
+else{
+return 0
+}
+}
+
+function waveletData(pos, scale, mother) {
+  pointNum = 500;
+
+  const data = [];
+  for (let t = 0; t <= pointNum; t++) {
+    x = 2*(-1+2*t/pointNum)*Math.PI;
+    // Replace morlet with mexcicanHat  to generate mexican hat wavelet data
+    y = mother((x-pos)/scale)/Math.sqrt(scale);
+    data.push([x, y])
+  }
+  return data;
+}
+
+// Add function graph
+let line = d3.line()
+  .x(d => xScale(d[0]))
+  .y(d => yScale(d[1]))
+  
+var path_morlet = svg_morlet.append("path")
+	  .attr("class", "line")
+	  .attr("clip-path", "url(#chart-area)")
+	  .attr("fill", "none")
+	  .attr("stroke", "teal")
+	  .attr("stroke-width", 2);
+
+updateWavelet();
+
+// Function that updates chart upon slider change
+function updateWavelet() {
+scale = document.getElementById('scaleSlider').value;
+pos = document.getElementById('posSlider').value;motherWavelet = morlet;
+if(document.getElementById('mother_wavelet').value == "mexican"){
+motherWavelet = mexicanHat;
+}
+else if(document.getElementById('mother_wavelet').value == "poisson"){
+motherWavelet = poisson;
+}
+else if(document.getElementById('mother_wavelet').value == "shannon"){
+motherWavelet = shannon;
+}
+else if(document.getElementById('mother_wavelet').value == "haar"){
+motherWavelet = haar;
+}
+	numbers = waveletData(pos, scale, motherWavelet);
+	path_morlet.data([numbers])
+	  .attr("d", line);
+}
+
+// Listen to sliders
+d3.select("#scaleSlider").on("input", updateWavelet);
+d3.select("#posSlider").on("input", updateWavelet);
+d3.select("#mother_wavelet").on("input", updateWavelet);
+
+</script>
+</figure>
 <p>
 The wavelet transform is very closely related to the well-known Fourier transform. The Fourier transform convolves a signal
 <span class="math inline">\(x\mapsto f(x)\)</span>
@@ -1068,41 +1255,41 @@ We compare the wavelet transform to the Fourier transform in the Table above and
 
       //count pixels
 
-      var alphaPixels = 0;
-
-      var data = ctx_draw.getImageData(0, 0, ctx_draw.canvas.width, ctx_draw.canvas.height).data;
-      for (var i = 3; i < data.length; i += 4) {
-        if (data[i] > 0) alphaPixels++;
-      }
-
       update_obfuscated();
     });
 
 
     function HaarWaveletTrans(src, NIter) {
-      var dst = src;
-      height = src.length;
-      width = src[0].length;
+      var dst = src.map(function(arr) {
+    return arr.slice();
+});
+				height = src.length;
+				width = src[0].length;
+					
+				for (let k=0;k<NIter;k++) 
+				{
+					for (let y=0;y<(height>>(k+1));y++)
+					{
+						for (let x=0; x<(width>>(k+1));x++)
+						{
+							c=(src[2*y][2*x]+src[2*y][2*x+1]+src[2*y+1][2*x]+src[2*y+1][2*x+1])*0.5;
+							dst[y][x]=c;
+						
+							dh=(src[2*y][2*x]-src[2*y][2*x+1]+src[2*y+1][2*x]-src[2*y+1][2*x+1])*0.5;
+							dst[y][x+(width>>(k+1))]=dh;
 
-      for (let k = 0; k < NIter; k++) {
-        for (let y = 0; y < (height >> (k + 1)); y++) {
-          for (let x = 0; x < (width >> (k + 1)); x++) {
-            c = (src[2 * y][2 * x] + src[2 * y][2 * x + 1] + src[2 * y + 1][2 * x] + src[2 * y + 1][2 * x + 1]) * 0.5;
-            dst[y][x] = c;
+							dv=(src[2*y][2*x]+src[2*y][2*x+1]-src[2*y+1][2*x]-src[2*y+1][2*x+1])*0.5;
+							dst[y+(height>>(k+1))][x]=dv;
 
-            dh = (src[2 * y][2 * x] - src[2 * y][2 * x + 1] + src[2 * y + 1][2 * x] - src[2 * y + 1][2 * x + 1]) * 0.5;
-            dst[y][x + (width >> (k + 1))] = dh;
-
-            dv = (src[2 * y][2 * x] + src[2 * y][2 * x + 1] - src[2 * y + 1][2 * x] - src[2 * y + 1][2 * x + 1]) * 0.5;
-            dst[y + (height >> (k + 1))][x] = dv;
-
-            dd = (src[2 * y][2 * x] - src[2 * y][2 * x + 1] - src[2 * y + 1][2 * x] + src[2 * y + 1][2 * x + 1]) * 0.5;
-            dst[y + (height >> (k + 1))][x + (width >> (k + 1))] = dd;
-          }
-        }
-        src = dst;
-      }
-      return src;
+							dd=(src[2*y][2*x]-src[2*y][2*x+1]-src[2*y+1][2*x]+src[2*y+1][2*x+1])*0.5;
+							dst[y+(height>>(k+1))][x+(width>>(k+1))]=dd;
+						}
+					}
+					src = dst.map(function(arr) {
+    return arr.slice();
+});
+				}
+				return src;
     }
 
     async function update_obfuscated() {
