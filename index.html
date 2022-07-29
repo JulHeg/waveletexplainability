@@ -44,6 +44,7 @@
       word-wrap: break-word;
       text-rendering: optimizeLegibility;
       font-kerning: normal;
+	  overflow-x: hidden
     }
 
     @media (max-width: 600px) {
@@ -464,8 +465,8 @@ flex-wrap: wrap;
       <option>64</option>
     </select>
     <select id="fill_select">
-      <option value="1" selected>Fill with noise</option>
-      <option value="0">Fill white</option>
+      <option value="1">Fill with noise</option>
+      <option value="0" selected>Fill white</option>
     </select>
     <select id="ground_image_2">
       <option value="295">Bear</option>
@@ -1087,7 +1088,7 @@ The Fourier Transform has full frequency resolution but no spatial resolution, m
 We compare the wavelet transform to the Fourier transform in the Table above and the figure below. In the figure below click on the button to select beween three signals and notice that the wavelet transform can localize the sine oscillations and the delta function peak, as well as give time-frequency information for the signal in the El Niño dataset (quarterly measurements of the sea surface temperature from 1871 up to 1997 throughout the equatorial Pacific). 
 </p>
 <figure>
-<select id="imselector">
+<select id="imselector" style="margin-bottom: 15px;">
     <option value="slide1">Delta</option>
     <option value="slide2">El Niño</option>
     <option value="slide3" selected>Sine</option>
@@ -1486,30 +1487,35 @@ We compare the wavelet transform to the Fourier transform in the Table above and
 	  
   <h1 class="unnumbered" id="references">References</h1>
 	  <ol style="font-size: 15px;">
-	  <li id="amershi2015modeltracker">
-	  <span class="title">"Why should I trust you?" Explaining the predictions of any classifier</span> 
-	  <a href="https://arxiv.org/pdf/1602.04938.pdf?source=post_page---------------------------">[PDF]</a><br>
-	  Ribeiro, M. T., Singh, S., & Guestrin, C. (2016, August). In Proceedings of the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 1135-1144).
-	  <a href="https://dl.acm.org/doi/10.1145/2939672.2939778" style="text-decoration:inherit;">DOI: 10.1145/2939672.2939778</a>
-	  </li>
-	  
-	  <li id="rde">
-	  <span class="title">A Rate-Distortion Framework for Explaining Neural Network Decisions</span> 
-	  <a href="https://arxiv.org/pdf/1905.11092">[PDF]</a><br>
-	  MacDonald, J., Wäldchen, S., Hauch, S., & Kutyniok, G. (2019). arXiv preprint arXiv:1905.11092.
-	  </li>
-	  
-	  <li id="onpix">
+	    <li id="onpix">
 	  <span class="title">On Pixel-Wise Explanations for Non-Linear Classifier Decisions by Layer-Wise Relevance Propagation</span> 
 	  <a href="https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0130140&type=printable">[PDF]</a><br>
 	  Bach, S., Binder, A., Montavon, G., Klauschen, F., Müller, K. R., & Samek, W. (2015). PloS one, 10(7), e0130140.
 	  <a href="https://doi.org/10.1371/journal.pone.0130140" style="text-decoration:inherit;">DOI: 10.1371/journal.pone.0130140</a>
 	  </li>
 	  
+	  <li id="thislooks">
+	  <span class="title">This Looks Like That: Deep Learning for Interpretable Image Recognition</span> 
+	  <a href="https://openaccess.thecvf.com/content_ICCV_2017/papers/Fong_Interpretable_Explanations_of_ICCV_2017_paper.pdf">[PDF]</a><br>
+	  Chen, C., Li, O., Tao, D., Barnett, A., Rudin, C., & Su, J. K. (2019). Advances in neural information processing systems, 32.
+	  </li>
+	  
+	  <li id="interpretable">
+	  <span class="title">Interpretable Explanations of Black Boxes by Meaningful Perturbation</span> 
+	  <a href="https://openaccess.thecvf.com/content_ICCV_2017/papers/Fong_Interpretable_Explanations_of_ICCV_2017_paper.pdf">[PDF]</a><br>
+	  Fong, R. C., & Vedaldi, A. (2017). In Proceedings of the IEEE international conference on computer vision (pp. 3429-3437).
+	  </li>
+	  
 	  <li id="indist">
 	  <span class="title">In-Distribution Interpretability for Challenging Modalities</span> 
 	  <a href="https://arxiv.org/pdf/2007.00758.pdf">[PDF]</a><br>
 	  Heiß, C., Levie, R., Resnick, C., Kutyniok, G., & Bruna, J. (2020). arXiv preprint arXiv:2007.00758.
+	  </li>
+	  
+	  <li id="cartx">
+	  <span class="title">Cartoon Explanations of Image Classifiers</span> 
+	  <a href="https://arxiv.org/pdf/2110.03485">[PDF]</a><br>
+	  Kolek, S., Nguyen, D. A., Levie, R., Bruna, J., & Kutyniok, G. (2021). arXiv preprint arXiv:2110.03485.
 	  </li>
 	  
 	  <li id="arde">
@@ -1519,10 +1525,16 @@ We compare the wavelet transform to the Fourier transform in the Table above and
 	  <a href="https://doi.org/10.1007/978-3-031-04083-2_6" style="text-decoration:inherit;">DOI: 10.1007/978-3-031-04083-2_6</a>
 	  </li>
 	  
-	  <li id="cartx">
-	  <span class="title">Cartoon Explanations of Image Classifiers</span> 
-	  <a href="https://arxiv.org/pdf/2110.03485">[PDF]</a><br>
-	  Kolek, S., Nguyen, D. A., Levie, R., Bruna, J., & Kutyniok, G. (2021). arXiv preprint arXiv:2110.03485.
+	  <li id="aunified">
+	  <span class="title">A Unified Approach to Interpreting Model Predictions</span> 
+	  <a href="https://proceedings.neurips.cc/paper/2017/file/8a20a8621978632d76c43dfd28b67767-Paper.pdf">[PDF]</a><br>
+	  Lundberg, S. M., & Lee, S. I. (2017). Advances in neural information processing systems, 30.1
+	  </li>
+	  
+	  <li id="rde">
+	  <span class="title">A Rate-Distortion Framework for Explaining Neural Network Decisions</span> 
+	  <a href="https://arxiv.org/pdf/1905.11092">[PDF]</a><br>
+	  MacDonald, J., Wäldchen, S., Hauch, S., & Kutyniok, G. (2019). arXiv preprint arXiv:1905.11092.
 	  </li>
 	  
 	  <li id="wavelettour">
@@ -1532,16 +1544,11 @@ We compare the wavelet transform to the Fourier transform in the Table above and
 	  <a href="" style="text-decoration:inherit;"></a>
 	  </li>
 	  
-	  <li id="interpretable">
-	  <span class="title">Interpretable Explanations of Black Boxes by Meaningful Perturbation</span> 
-	  <a href="https://openaccess.thecvf.com/content_ICCV_2017/papers/Fong_Interpretable_Explanations_of_ICCV_2017_paper.pdf">[PDF]</a><br>
-	  Fong, R. C., & Vedaldi, A. (2017). In Proceedings of the IEEE international conference on computer vision (pp. 3429-3437).
-	  </li>
-	  
-	  <li id="thislooks">
-	  <span class="title">This Looks Like That: Deep Learning for Interpretable Image Recognition</span> 
-	  <a href="https://openaccess.thecvf.com/content_ICCV_2017/papers/Fong_Interpretable_Explanations_of_ICCV_2017_paper.pdf">[PDF]</a><br>
-	  Chen, C., Li, O., Tao, D., Barnett, A., Rudin, C., & Su, J. K. (2019). Advances in neural information processing systems, 32.
+	<li id="amershi2015modeltracker">
+	  <span class="title">"Why should I trust you?" Explaining the predictions of any classifier</span> 
+	  <a href="https://arxiv.org/pdf/1602.04938.pdf?source=post_page---------------------------">[PDF]</a><br>
+	  Ribeiro, M. T., Singh, S., & Guestrin, C. (2016, August). In Proceedings of the 22nd ACM SIGKDD international conference on knowledge discovery and data mining (pp. 1135-1144).
+	  <a href="https://dl.acm.org/doi/10.1145/2939672.2939778" style="text-decoration:inherit;">DOI: 10.1145/2939672.2939778</a>
 	  </li>
 	  
 	  <li id="axiomatic">
@@ -1549,22 +1556,6 @@ We compare the wavelet transform to the Fourier transform in the Table above and
 	  <a href="http://proceedings.mlr.press/v70/sundararajan17a/sundararajan17a.pdf">[PDF]</a><br>
 	  Sundararajan, M., Taly, A., & Yan, Q. (2017, July). In International conference on machine learning (pp. 3319-3328). PMLR.
 	  </li>
-	  
-	  <li id="aunified">
-	  <span class="title">A Unified Approach to Interpreting Model Predictions</span> 
-	  <a href="https://proceedings.neurips.cc/paper/2017/file/8a20a8621978632d76c43dfd28b67767-Paper.pdf">[PDF]</a><br>
-	  Lundberg, S. M., & Lee, S. I. (2017). Advances in neural information processing systems, 30.1
-	  </li>
-	  
-	  <!--
-	  <li id="">
-	  <span class="title">title</span> 
-	  <a href="">[PDF]</a><br>
-	  
-	  <a href="" style="text-decoration:inherit;"></a>
-	  </li>
-	  -->
-	  
 	  </ol>
 </body>
 
