@@ -807,7 +807,7 @@ flex-wrap: wrap;
   </figure>
 
   <p>
-    Of course, we don't want to guess and draw multiple masks ourselves in practive to explain a neural net. Instead we want an algorithm that finds a good explanation mask efficiently.
+    Of course, we don't want to guess and draw multiple masks ourselves in practice to explain a neural net. Instead we want an algorithm that finds a good explanation mask efficiently.
   </p>
   <h1 class="unnumbered" id="generating-mask-based-explanations">Finding Mask Explanations</h1>
   <p>How can we find a "good" explanation mask? It turns out, all we need to do is solve an optimization problem. First, we model
@@ -843,7 +843,7 @@ flex-wrap: wrap;
       class="math inline">\({\color{orange}x}\in\mathbb{R}^d\)</span> (e.g. for images <span
       class="math inline">\(d\)</span> is in the order of the number of pixels) and solving the optimization problem
     becomes <a href="https://arxiv.org/abs/1905.11092">computationally infeasible</a>. Still, we can try to
-    approximately solve it by solving the Lagrangian relaxation
+    approximately solve it by solving the <a href="https://en.wikipedia.org/wiki/Lagrangian_relaxation">Lagrangian relaxation</a>
 	</p>
 	<p style="overflow-x: auto;">
 	<span class="math display">\[\begin{aligned}
@@ -855,7 +855,8 @@ flex-wrap: wrap;
       class="math inline">\(\lambda&gt;0\)</span> determines the sparsity level of the relaxed continuous mask <span
       class="math inline">\(m\in[0,1]^d\)</span>. Although the mask <span class="math inline">\(m\)</span> is no longer
     binary in the relaxed optimization problem, the <span class="math inline">\(\ell_1\)</span>-term promotes sparsity
-    and produces useful explanatory insight in practice. In practice, the expectation can be approximated with a simple Monte-Carlo estimate and the relaxed optimization problem can be solved with gradient
+    and produces useful explanatory insight in practice. In practice, the expectation can be approximated with a simple <a
+    href="https://en.wikipedia.org/wiki/Wavelet_transform">Monte-Carlo estimate</a> and the relaxed optimization problem can be solved with gradient
     descent over the input mask <span class="math inline">\(m\)</span>.
   </p>
       <p>How can we apply the above framework to images? Images are typically represented as an array of shape <span class="math inline">\(\mathbb{R}^{n\times m\times
@@ -867,7 +868,9 @@ flex-wrap: wrap;
     relevant piece-wise smooth image regions. This is where the so-called <a
       href="https://en.wikipedia.org/wiki/Wavelet_transform">wavelet transform</a> can help us. By applying the wavelet
     transformation, we still represent the images as an array of numbers, but instead of the brightness of a single
-    pixel, each number can represent a larger structure. The wavelet transform tends to be not as widely known as the Fourier transform outside the signal processing community. Therefore, we will briefly explain the wavelet transform, which is an essential tool in signal processing and has plenty of applications beyond explainability in data science and machine learning.
+    pixel, each number can represent a larger structure. The wavelet transform tends to be not as widely known as the <a
+    href="https://betterexplained.com/articles/an-interactive-guide-to-the-fourier-transform/">Fourier transform</a> outside the signal processing community.
+    Therefore, we will briefly explain the wavelet transform, which is an essential tool in signal processing and has plenty of applications beyond explainability in data science and machine learning.
 </p>
 
 <h1 class="unnumbered" id="Wavelets">Wavelets</h1>
@@ -1369,7 +1372,8 @@ We compare the wavelet transform to the Fourier transform in the Table above and
       <option value="lighthouse1">Lighthouse</option>
       <option value="zebra1">Zebra</option>
     </select><input id="slider" type="range" min="0" max="10000" />
-    <div>&lambda; = <span id="lambda_output"> </span></div>
+    <div><span
+      class="math inline">\(\lambda&gt;0\)</span> = <span id="lambda_output"> </span></div>
 	</div>
     <div id="images" class="flex-container">
       <div class="flex-content">
